@@ -1,19 +1,18 @@
 import { PageShell } from "@/components/layout/page-shell";
+import { BackendStatusCard } from "@/components/status/backend-status-card";
 import { getApiBaseUrl } from "@/lib/config";
-import { getBackendStatusPlaceholder } from "@/services/api-client";
 
-export default async function HomePage() {
+export default function HomePage() {
   const apiBaseUrl = getApiBaseUrl();
-  const backendStatus = await getBackendStatusPlaceholder();
 
   return (
     <PageShell>
       <section className="hero">
         <p className="eyebrow">Sprint 1</p>
-        <h1>Frontend scaffold is ready.</h1>
+        <h1>Frontend and backend connectivity is in progress.</h1>
         <p className="lede">
-          This page confirms the Next.js application is running and the base
-          frontend structure is in place for future feature work.
+          This page confirms the Next.js application is running and performs a
+          simple browser-side backend health check for the Sprint 1 foundation.
         </p>
       </section>
 
@@ -32,11 +31,7 @@ export default async function HomePage() {
           </p>
         </article>
 
-        <article className="status-card">
-          <h2>Backend Service Layer</h2>
-          <p className="status-value">{backendStatus.label}</p>
-          <p>{backendStatus.message}</p>
-        </article>
+        <BackendStatusCard />
       </section>
     </PageShell>
   );

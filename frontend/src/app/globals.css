@@ -113,6 +113,18 @@ a {
   font-size: 1.35rem;
 }
 
+.status-value--neutral {
+  color: var(--color-text);
+}
+
+.status-value--success {
+  color: #1f7a4d;
+}
+
+.status-value--failure {
+  color: #b4493d;
+}
+
 @media (max-width: 640px) {
   .page-shell {
     width: min(100% - 1.25rem, 72rem);
