@@ -1,0 +1,19 @@
+[project]
+name = "aitsi-backend"
+version = "0.1.0"
+description = "Backend API for the AITSI project."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0,<1.0.0",
+    "pydantic-settings>=2.6.0,<3.0.0",
+    "uvicorn[standard]>=0.32.0,<1.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.27.0,<1.0.0",
+    "pytest>=8.3.0,<9.0.0",
+]
+
+[tool.uv]
+package = false
