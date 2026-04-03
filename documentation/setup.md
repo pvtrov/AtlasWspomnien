@@ -44,6 +44,10 @@ This starts:
 - the frontend container,
 - the PostgreSQL database container.
 
+During backend startup, the backend container applies `alembic upgrade head` automatically before starting the FastAPI development server.
+
+The PostgreSQL container exposes a health check, and the backend waits for the database service to become healthy before starting.
+
 ## Backend Commands Outside Docker
 
 If backend package installation or test commands are run outside Docker and the local shell environment forces a company package mirror, explicitly target the official PyPI index for this project.
@@ -69,7 +73,9 @@ This ensures local backend dependency resolution and test execution use the offi
 
 ## Database Migration Commands
 
-After backend dependencies are installed, run Alembic commands from `backend/`.
+After backend dependencies are installed, Alembic migrations are applied automatically during Docker-based backend startup.
+
+Manual Alembic commands can still be run from `backend/` when needed.
 
 Example:
 

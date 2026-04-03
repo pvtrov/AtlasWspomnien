@@ -16,4 +16,4 @@ RUN pip install --no-cache-dir uv
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "if [ -f pyproject.toml ]; then uv sync && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload; else echo 'Backend scaffold not created yet. Container is ready for the future FastAPI app.' && tail -f /dev/null; fi"]
+CMD ["sh", "-c", "if [ -f pyproject.toml ]; then uv sync && uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload; else echo 'Backend scaffold not created yet. Container is ready for the future FastAPI app.' && tail -f /dev/null; fi"]

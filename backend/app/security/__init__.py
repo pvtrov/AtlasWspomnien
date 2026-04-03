@@ -1,1 +1,1 @@
-"""Security package reserved for future authentication work."""
+"""Security helpers for authentication and password handling."""

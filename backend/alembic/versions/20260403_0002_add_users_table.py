@@ -19,7 +19,6 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     user_role = sa.Enum("administrator", "creator", name="user_role")
-    user_role.create(op.get_bind(), checkfirst=True)
 
     op.create_table(
         "users",
@@ -54,6 +53,3 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_table("users")
-
-    user_role = sa.Enum("administrator", "creator", name="user_role")
-    user_role.drop(op.get_bind(), checkfirst=True)

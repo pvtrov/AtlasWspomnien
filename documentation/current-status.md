@@ -2,7 +2,7 @@
 
 ## Project State
 
-The project has completed Sprint 1 foundation work and has started Sprint 2 user-domain groundwork.
+The project has completed Sprint 1 foundation work and now has the core Sprint 2 authentication foundation implemented.
 
 The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
@@ -11,12 +11,17 @@ The repository now includes:
 - a working FastAPI scaffold,
 - a working Next.js scaffold,
 - PostgreSQL database foundation and migration scaffolding,
-- an initial persisted user domain model with role representation,
+- a persisted user domain model with role representation,
+- backend creator registration and login endpoints,
+- password hashing and JWT-based authentication foundation,
+- frontend login and registration screens connected to backend authentication,
+- minimal frontend authenticated state handling,
 - a backend health endpoint,
-- a frontend status page with backend connectivity check,
+- a protected backend auth route for current-user access,
+- a frontend status page with backend connectivity and auth-state visibility,
 - project and sprint documentation aligned with Sprint 1 and current Sprint 2 scope.
 
-The current repository state is ready to continue Sprint 2 authentication-focused work on top of the implemented user foundation.
+The current repository state is ready to move from authentication foundation work into the next product slices that depend on authenticated creators.
 
 ## Confirmed Decisions
 
@@ -45,14 +50,18 @@ The repository currently contains the main areas agreed for the project:
 
 ## Implemented Foundation So Far
 
-The repository now includes the first Sprint 1 application scaffolding work:
+The repository now includes the implemented Sprint 1 foundation and the current Sprint 2 authentication foundation:
 
 ### Backend
 
 - FastAPI foundation with application entry point, central routing, versioned API routing, configuration, and a health-check endpoint,
 - environment-loading structure for local and Docker-based development,
 - a backend CORS configuration path driven by environment settings for local frontend access,
-- a basic backend smoke test for the health endpoint and CORS coverage for the frontend origin.
+- creator registration and login endpoints,
+- password hashing and credential verification,
+- JWT-based bearer-token authentication for Sprint 2,
+- an authenticated current-user route at `/api/v1/auth/me`,
+- backend auth tests alongside the existing health smoke test coverage.
 
 ### Database
 
@@ -60,6 +69,7 @@ The repository now includes the first Sprint 1 application scaffolding work:
 - Alembic configuration wired to the backend environment settings,
 - an initial empty migration baseline ready for future schema changes,
 - a user persistence migration that creates the initial `users` table,
+- Docker-based automatic `alembic upgrade head` during backend startup,
 - database connectivity driven through `DATABASE_URL`.
 
 ### User Domain
@@ -69,7 +79,7 @@ The repository now includes the first Sprint 1 application scaffolding work:
 - an implicit public `viewer` role for non-authenticated archive access,
 - a unique `username` field as the initial nick or handle representation,
 - a user blocking flag to support later MVP moderation flow,
-- foundational backend user schemas prepared for later registration and login work.
+- backend user and auth schemas for registration, login, and current-user flows.
 
 ### Frontend
 
@@ -77,11 +87,15 @@ The repository now includes the first Sprint 1 application scaffolding work:
 - shared frontend styling foundation through global styles and design tokens,
 - a minimal layout component and shared frontend API base URL resolution,
 - a browser-side connectivity check from frontend to backend health endpoint,
-- a simple UI status flow for checking, success, and failure states.
+- login and registration pages,
+- frontend auth API calls for registration, login, and current-user lookup,
+- minimal client-side auth state using the Sprint 2 access token,
+- simple logged-in vs logged-out behavior on the frontend home page.
 
 ### Local Development
 
 - Docker-based local structure for backend, frontend, and PostgreSQL services.
+- backend startup now waits for healthy PostgreSQL and applies migrations automatically before starting the development server.
 
 ## Working Rules
 
@@ -93,12 +107,11 @@ The repository now includes the first Sprint 1 application scaffolding work:
 
 ## Next Recommended Step
 
-The next recommended implementation step is to continue Sprint 2 by building authentication on top of the implemented user model.
+The next recommended implementation step is to continue beyond the Sprint 2 authentication foundation into the first authenticated creator workflows.
 
 The most natural next product and implementation area is:
 
-- authentication and authorization foundation,
-- creator registration and login,
-- password hashing and credential verification,
-- protected backend routes,
-- initial auth-related frontend flows.
+- creator-owned domain features,
+- photo upload and metadata flows,
+- authenticated creator-facing views built on top of the current auth foundation,
+- additional protected backend routes tied to the next business slice.
