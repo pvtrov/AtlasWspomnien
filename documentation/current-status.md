@@ -2,7 +2,7 @@
 
 ## Project State
 
-The project is at the end of Sprint 1 foundation work.
+The project has completed Sprint 1 foundation work and has started Sprint 2 user-domain groundwork.
 
 The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
@@ -11,11 +11,12 @@ The repository now includes:
 - a working FastAPI scaffold,
 - a working Next.js scaffold,
 - PostgreSQL database foundation and migration scaffolding,
+- an initial persisted user domain model with role representation,
 - a backend health endpoint,
 - a frontend status page with backend connectivity check,
-- project and sprint documentation aligned with Sprint 1 scope.
+- project and sprint documentation aligned with Sprint 1 and current Sprint 2 scope.
 
-The current repository state is ready to move from foundation work into the next implementation stage.
+The current repository state is ready to continue Sprint 2 authentication-focused work on top of the implemented user foundation.
 
 ## Confirmed Decisions
 
@@ -28,6 +29,7 @@ The current repository state is ready to move from foundation work into the next
 - User stories: see [user-stories.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/product/user-stories.md)
 - Epics and implementation tasks: see [epics-and-tasks.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/product/epics-and-tasks.md)
 - Current implementation scope for Sprint 1: see [sprint-1.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-1.md)
+- Current implementation scope for Sprint 2: see [sprint-2.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-2.md)
 
 ## Current Repository Structure
 
@@ -57,7 +59,17 @@ The repository now includes the first Sprint 1 application scaffolding work:
 - SQLAlchemy base, engine, and session scaffolding,
 - Alembic configuration wired to the backend environment settings,
 - an initial empty migration baseline ready for future schema changes,
+- a user persistence migration that creates the initial `users` table,
 - database connectivity driven through `DATABASE_URL`.
+
+### User Domain
+
+- an initial persisted `User` model,
+- explicit stored roles for `creator` and `administrator`,
+- an implicit public `viewer` role for non-authenticated archive access,
+- a unique `username` field as the initial nick or handle representation,
+- a user blocking flag to support later MVP moderation flow,
+- foundational backend user schemas prepared for later registration and login work.
 
 ### Frontend
 
@@ -81,12 +93,12 @@ The repository now includes the first Sprint 1 application scaffolding work:
 
 ## Next Recommended Step
 
-The next recommended implementation step is to define and begin Sprint 2.
+The next recommended implementation step is to continue Sprint 2 by building authentication on top of the implemented user model.
 
 The most natural next product and implementation area is:
 
-- users and authentication,
-- user model and roles,
+- authentication and authorization foundation,
 - creator registration and login,
+- password hashing and credential verification,
 - protected backend routes,
-- initial frontend authentication views.
+- initial auth-related frontend flows.
