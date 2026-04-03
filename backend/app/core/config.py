@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     debug: bool = False
     api_prefix: str = "/api"
     database_url: str = "postgresql+psycopg://aitsi:aitsi@postgres:5432/aitsi"
+    cors_allow_origins: list[str] = ["http://localhost:3000"]
 
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),

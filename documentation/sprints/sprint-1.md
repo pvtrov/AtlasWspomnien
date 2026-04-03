@@ -157,6 +157,17 @@ The repository now includes:
 
 Confirm that the frontend can communicate with the backend in the local development environment.
 
+#### Current Status
+
+This frontend-backend connectivity work package has now been implemented.
+
+The repository now includes:
+
+- a frontend API base URL strategy driven by `NEXT_PUBLIC_API_URL`,
+- a backend CORS allow-list driven by environment configuration for local frontend access,
+- a simple browser-side request from the frontend to the backend health endpoint,
+- a visible UI state for checking, success, and failure outcomes.
+
 #### Tasks
 
 - Define the frontend API base URL strategy.

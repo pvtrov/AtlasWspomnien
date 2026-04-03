@@ -18,6 +18,14 @@ The environment file is used by:
 - the backend container,
 - the frontend container.
 
+For local frontend-to-backend communication, the backend CORS allow-list is also configured through the environment file.
+
+Example:
+
+```bash
+CORS_ALLOW_ORIGINS=["http://localhost:3000"]
+```
+
 For backend package installation, the project environment may also define Python package index settings such as `UV_DEFAULT_INDEX`, `UV_INDEX`, and `PIP_INDEX_URL`.
 
 The default project configuration is intended to use the official PyPI index.
