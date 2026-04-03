@@ -87,13 +87,15 @@ This uses the backend environment configuration and the `DATABASE_URL` value to 
 
 ## Current Development State
 
-At this stage, Docker is introduced as the primary development environment before the backend and frontend application scaffolds are fully implemented.
+At this stage, Docker is the primary local development environment for the implemented Sprint 1 foundation.
 
 That means:
 
 - PostgreSQL is ready to run immediately,
-- backend and frontend containers are prepared for the future application code,
-- once the application scaffolds are added, the same Docker setup will become the active development workflow.
+- the backend FastAPI scaffold is implemented,
+- the frontend Next.js scaffold is implemented,
+- the frontend can perform a simple backend health-check request,
+- the same Docker setup is intended to remain the main development workflow as the project grows.
 
 ## Intended Workflow
 

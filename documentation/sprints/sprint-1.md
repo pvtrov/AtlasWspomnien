@@ -6,6 +6,12 @@ Build the technical foundation of the project so the repository contains a worki
 
 Sprint 1 is intentionally focused on infrastructure and application scaffolding rather than on full business functionality.
 
+## Overall Status
+
+Sprint 1 foundation work has been implemented and is ready for review and closure.
+
+The repository now contains the expected technical foundation for moving into the next stage of product development.
+
 ## In Scope
 
 Sprint 1 includes:
@@ -185,6 +191,12 @@ The repository now includes:
 
 Prepare the minimum structure needed for later domain modeling work.
 
+#### Current Status
+
+This initial domain preparation work package has been minimally prepared.
+
+The repository includes reserved backend modules for future models and schemas, but the real archive domain model has intentionally been deferred to the next stage.
+
 #### Tasks
 
 - Reserve backend modules for models and schemas.
@@ -201,6 +213,22 @@ Prepare the minimum structure needed for later domain modeling work.
 #### Goal
 
 Keep the repository state understandable for future threads and contributors.
+
+#### Current Status
+
+This documentation update work package has been implemented for Sprint 1.
+
+The repository documentation now covers:
+
+- project overview,
+- architecture,
+- setup,
+- Git workflow,
+- MVP,
+- user stories,
+- epics and tasks,
+- Sprint 1 scope,
+- current repository status.
 
 #### Tasks
 
@@ -233,3 +261,5 @@ Sprint 1 can be treated as complete when:
 - frontend can confirm backend status,
 - codebase structure matches the intended architecture,
 - the repository documentation reflects the implemented foundation.
+
+These conditions are now substantially satisfied, subject to final review and branch integration.

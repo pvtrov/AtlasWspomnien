@@ -2,11 +2,20 @@
 
 ## Project State
 
-The project is in the initial foundation stage.
+The project is at the end of Sprint 1 foundation work.
 
-So far, the repository structure has been created, the core technology stack has been selected, Docker has been introduced as the primary local development environment, and the backend foundation has been scaffolded.
+The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
-The application foundation has now been scaffolded further. The current repository state includes initial backend and frontend setup together with the first database foundation layer, while the project remains focused on technical foundation work rather than business functionality.
+The repository now includes:
+
+- a working FastAPI scaffold,
+- a working Next.js scaffold,
+- PostgreSQL database foundation and migration scaffolding,
+- a backend health endpoint,
+- a frontend status page with backend connectivity check,
+- project and sprint documentation aligned with Sprint 1 scope.
+
+The current repository state is ready to move from foundation work into the next implementation stage.
 
 ## Confirmed Decisions
 
@@ -40,7 +49,8 @@ The repository now includes the first Sprint 1 application scaffolding work:
 
 - FastAPI foundation with application entry point, central routing, versioned API routing, configuration, and a health-check endpoint,
 - environment-loading structure for local and Docker-based development,
-- a basic backend smoke test for the health endpoint.
+- a backend CORS configuration path driven by environment settings for local frontend access,
+- a basic backend smoke test for the health endpoint and CORS coverage for the frontend origin.
 
 ### Database
 
@@ -53,7 +63,9 @@ The repository now includes the first Sprint 1 application scaffolding work:
 
 - Next.js application foundation with root layout and a simple status page,
 - shared frontend styling foundation through global styles and design tokens,
-- a minimal layout component and service/config placeholders for future backend communication.
+- a minimal layout component and shared frontend API base URL resolution,
+- a browser-side connectivity check from frontend to backend health endpoint,
+- a simple UI status flow for checking, success, and failure states.
 
 ### Local Development
 
@@ -69,8 +81,12 @@ The repository now includes the first Sprint 1 application scaffolding work:
 
 ## Next Recommended Step
 
-The next recommended implementation steps are to continue Sprint 1 foundation work:
+The next recommended implementation step is to define and begin Sprint 2.
 
-- implement the basic frontend-to-backend connectivity check,
-- confirm the Docker-based workflow end to end with migrations included,
-- continue the documentation update pass as the foundation becomes runnable end to end.
+The most natural next product and implementation area is:
+
+- users and authentication,
+- user model and roles,
+- creator registration and login,
+- protected backend routes,
+- initial frontend authentication views.
