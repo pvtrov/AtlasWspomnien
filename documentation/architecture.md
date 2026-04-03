@@ -36,6 +36,14 @@ PostgreSQL was selected as the database because the system requires a strong rel
 - moderation history,
 - audit-related data.
 
+The initial Sprint 2 user domain foundation is based on a single `users` table with:
+
+- unique email identity,
+- a unique `username` used as the initial nick/handle,
+- explicit stored roles for `creator` and `administrator`,
+- an `is_blocked` flag for future MVP moderation flow,
+- an implicit public `viewer` role that is not stored in the database at this stage.
+
 ### Frontend
 
 React was selected for the frontend because it provides a strong ecosystem for component-based user interfaces and supports building accessible, interactive applications.
