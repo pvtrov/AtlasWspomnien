@@ -59,6 +59,24 @@ uv run pytest tests/test_health.py
 
 This ensures local backend dependency resolution and test execution use the official PyPI index even when the wider machine environment is configured differently.
 
+## Database Migration Commands
+
+After backend dependencies are installed, run Alembic commands from `backend/`.
+
+Example:
+
+```bash
+cd backend
+unset UV_INDEX_URL UV_EXTRA_INDEX_URL PIP_INDEX_URL PIP_EXTRA_INDEX_URL
+
+UV_DEFAULT_INDEX=https://pypi.org/simple \
+UV_INDEX=https://pypi.org/simple \
+PIP_INDEX_URL=https://pypi.org/simple \
+uv run alembic upgrade head
+```
+
+This uses the backend environment configuration and the `DATABASE_URL` value to apply migrations against the configured PostgreSQL database.
+
 ## Current Development State
 
 At this stage, Docker is introduced as the primary development environment before the backend and frontend application scaffolds are fully implemented.
