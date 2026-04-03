@@ -1,6 +1,41 @@
+import { getApiBaseUrl } from "@/lib/config";
+
 export type BackendHealthResponse = {
   status: string;
   service: string;
+};
+
+export type AuthUser = {
+  id: number;
+  email: string;
+  username: string;
+  role: string;
+  is_blocked: boolean;
+};
+
+export type RegisterRequest = {
+  username: string;
+  email: string;
+  password: string;
+};
+
+export type RegisterResponse = {
+  user: AuthUser;
+};
+
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  access_token: string;
+  token_type: string;
+  user: AuthUser;
+};
+
+export type CurrentUserResponse = {
+  user: AuthUser;
 };
 
 export type BackendStatusResult = {
@@ -8,6 +43,20 @@ export type BackendStatusResult = {
   message: string;
   tone: "neutral" | "success" | "failure";
 };
+
+function buildApiUrl(path: string): string {
+  const apiBaseUrl = getApiBaseUrl().replace(/\/$/, "");
+  return `${apiBaseUrl}${path}`;
+}
+
+async function readErrorMessage(response: Response): Promise<string> {
+  try {
+    const payload = (await response.json()) as { detail?: string };
+    return payload.detail || `Request failed with HTTP ${response.status}.`;
+  } catch {
+    return `Request failed with HTTP ${response.status}.`;
+  }
+}
 
 export async function getBackendStatus(
   apiBaseUrl: string,
@@ -47,4 +96,53 @@ export async function getBackendStatus(
       tone: "failure",
     };
   }
+}
+
+export async function registerUser(
+  payload: RegisterRequest,
+): Promise<RegisterResponse> {
+  const response = await fetch(buildApiUrl("/api/v1/auth/register"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return (await response.json()) as RegisterResponse;
+}
+
+export async function loginUser(payload: LoginRequest): Promise<LoginResponse> {
+  const response = await fetch(buildApiUrl("/api/v1/auth/login"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return (await response.json()) as LoginResponse;
+}
+
+export async function getCurrentUser(token: string): Promise<AuthUser> {
+  const response = await fetch(buildApiUrl("/api/v1/auth/me"), {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as CurrentUserResponse;
+  return payload.user;
 }

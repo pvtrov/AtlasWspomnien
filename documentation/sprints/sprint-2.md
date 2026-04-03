@@ -78,7 +78,7 @@ This task package is implemented with:
 - a persisted `users` table,
 - explicit stored roles for `creator` and `administrator`,
 - an implicit public `viewer` role outside persisted user records,
-- a unique `username` field as the initial nick/handle representation,
+- a unique `username` field as the initial public nick/handle representation,
 - an `is_blocked` field to support later administrator moderation flow,
 - backend user schemas prepared for the next authentication slice.
 
@@ -103,11 +103,32 @@ Add backend authentication primitives required for creator registration, login, 
 - Prefer a simple, maintainable approach suitable for MVP foundation.
 - Avoid introducing advanced auth patterns unless strictly necessary.
 
+#### Implementation Status
+
+This task package is implemented with:
+
+- a creator registration endpoint,
+- a login endpoint,
+- password hashing and credential verification,
+- signed bearer JWT access tokens for Sprint 2 authentication,
+- an authenticated-user dependency for protected route access,
+- a protected `GET /api/v1/auth/me` route that confirms the auth flow works.
+
 ### 3. Frontend Authentication Screens
 
 #### Goal
 
 Create the initial user-facing authentication entry points.
+
+#### Implementation Status
+
+This task package is implemented with:
+
+- a frontend login page at `/login`,
+- a frontend registration page at `/register`,
+- shared auth form structure for consistent screen behavior,
+- basic client-side validation for required fields, email format, password length, and password confirmation,
+- simple frontend-only submission messaging that keeps backend integration deferred to the later Sprint 2 auth-state step.
 
 #### Tasks
 
@@ -138,6 +159,16 @@ Connect the frontend authentication UI to backend auth behavior.
 
 - Keep the auth state simple.
 - The goal is foundation, not a full application shell.
+
+#### Implementation Status
+
+This task package is implemented with:
+
+- frontend registration and login calls aligned to the documented backend auth contract,
+- a minimal client-side auth state using the returned access token,
+- authenticated user restoration through the protected `GET /api/v1/auth/me` route,
+- minimal logged-in vs logged-out behavior on the frontend home page,
+- a simple protected-route example through frontend use of the authenticated current-user endpoint.
 
 ### 5. Documentation Updates
 
