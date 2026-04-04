@@ -38,7 +38,6 @@ class PhotoRead(BaseModel):
     taken_year: int
     taken_month: int | None
     taken_day: int | None
-    file_reference: str | None
     category: PhotoCategoryRead
     created_at: datetime
     updated_at: datetime

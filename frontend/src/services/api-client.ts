@@ -120,6 +120,10 @@ function buildApiUrl(path: string): string {
   return `${apiBaseUrl}${path}`;
 }
 
+export function getSharedPhotoImageUrl(photoId: number): string {
+  return buildApiUrl(`/api/v1/photos/${photoId}/image`);
+}
+
 async function readErrorMessage(response: Response): Promise<string> {
   try {
     const payload = (await response.json()) as {
@@ -285,6 +289,17 @@ export async function listOwnedPhotos(
   return payload.photos;
 }
 
+export async function listSharedPhotos(): Promise<Photo[]> {
+  const response = await fetch(buildApiUrl("/api/v1/photos"));
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as PhotoListResponse;
+  return payload.photos;
+}
+
 export async function getCreatorPhoto(
   token: string,
   photoId: number,
@@ -292,6 +307,17 @@ export async function getCreatorPhoto(
   const response = await fetch(buildApiUrl(`/api/v1/photos/${photoId}`), {
     headers: buildAuthorizedHeaders(token),
   });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as PhotoResponse;
+  return payload.photo;
+}
+
+export async function getSharedPhoto(photoId: number): Promise<Photo> {
+  const response = await fetch(buildApiUrl(`/api/v1/photos/${photoId}`));
 
   if (!response.ok) {
     throw new Error(await readErrorMessage(response));
@@ -335,21 +361,6 @@ export async function deleteCreatorPhoto(
   if (!response.ok) {
     throw new Error(await readErrorMessage(response));
   }
-}
-
-export async function fetchCreatorPhotoImage(
-  token: string,
-  photoId: number,
-): Promise<Blob> {
-  const response = await fetch(buildApiUrl(`/api/v1/photos/${photoId}/image`), {
-    headers: buildAuthorizedHeaders(token),
-  });
-
-  if (!response.ok) {
-    throw new Error(await readErrorMessage(response));
-  }
-
-  return response.blob();
 }
 
 export async function listAdminUsers(token: string): Promise<AdminUser[]> {

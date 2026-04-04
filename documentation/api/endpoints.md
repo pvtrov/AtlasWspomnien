@@ -207,6 +207,11 @@ Body:
 }
 ```
 
+#### Response Notes
+
+- the backend does not expose internal file storage references in shared archive responses,
+- the photo image must be retrieved through the dedicated image endpoint documented below.
+
 ## Non-Public Endpoints
 
 ### `POST /api/v1/photos`
@@ -439,20 +444,11 @@ Body:
 
 #### Purpose
 
-Return one photo visible to the currently authenticated creator or administrator.
+Return one shared archive photo for public browsing.
 
 #### Authentication
 
-This endpoint requires a bearer access token for an authenticated creator or administrator.
-
-- creators may access only their own photos,
-- administrators may access any photo.
-
-#### Request Headers
-
-```text
-Authorization: Bearer <access_token>
-```
+This endpoint is public and does not require authentication.
 
 #### Success Response
 
@@ -489,22 +485,6 @@ Body:
 
 #### Error Responses
 
-`401 Unauthorized`
-
-```json
-{
-  "detail": "Not authenticated."
-}
-```
-
-`403 Forbidden`
-
-```json
-{
-  "detail": "Only creators and administrators can access photos."
-}
-```
-
 `404 Not Found`
 
 ```json
@@ -517,17 +497,11 @@ Body:
 
 #### Purpose
 
-Return the binary image file for one photo visible to the currently authenticated creator or administrator.
+Return the binary image file for one shared archive photo.
 
 #### Authentication
 
-This endpoint requires a bearer access token for an authenticated creator or administrator.
-
-#### Request Headers
-
-```text
-Authorization: Bearer <access_token>
-```
+This endpoint is public and does not require authentication.
 
 #### Success Response
 
@@ -543,19 +517,11 @@ Body:
 
 #### Error Responses
 
-`401 Unauthorized`
+`404 Not Found`
 
 ```json
 {
-  "detail": "Not authenticated."
-}
-```
-
-`403 Forbidden`
-
-```json
-{
-  "detail": "Only creators and administrators can access photos."
+  "detail": "Photo file not found."
 }
 ```
 

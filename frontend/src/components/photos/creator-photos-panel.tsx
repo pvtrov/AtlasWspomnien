@@ -308,7 +308,6 @@ export function CreatorPhotosPanel() {
               {token ? (
                 <PhotoImage
                   photoId={photo.id}
-                  token={token}
                   alt={photo.description}
                   className="photo-card__image"
                 />

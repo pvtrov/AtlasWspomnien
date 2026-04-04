@@ -121,7 +121,6 @@ def test_photo_read_serializes_from_model() -> None:
         "taken_year": 1991,
         "taken_month": 9,
         "taken_day": None,
-        "file_reference": "photos/main-avenue-1991.jpg",
         "category": {
             "id": 2,
             "slug": "budynek",

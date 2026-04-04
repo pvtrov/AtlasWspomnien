@@ -202,14 +202,11 @@ export function PhotoDetailPanel() {
         <h1>{photo.location_text}</h1>
         {photo.description ? <p className="lede">{photo.description}</p> : null}
 
-        {token ? (
-          <PhotoImage
-            photoId={photo.id}
-            token={token}
-            alt={photo.description}
-            className="photo-detail__image"
-          />
-        ) : null}
+        <PhotoImage
+          photoId={photo.id}
+          alt={photo.description}
+          className="photo-detail__image"
+        />
 
         <dl className="photo-detail__meta">
           <div>

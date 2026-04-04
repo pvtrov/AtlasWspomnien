@@ -2,7 +2,7 @@
 
 ## Project State
 
-The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, Sprint 3 for its currently planned scope covering photo domain, photo organization, backend upload, and creator-facing photo management, and the Sprint 4 admin backend moderation scope.
+The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, Sprint 3 for its currently planned scope covering photo domain, photo organization, backend upload, and creator-facing photo management, Sprint 4 for its currently planned moderation foundation scope, and the shared archive browsing foundation within Sprint 5.
 
 The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
@@ -23,15 +23,18 @@ The repository now includes:
 - a frontend creator photo workspace with upload, owned-photo list, detail, edit, and delete flows,
 - administrator-only backend moderation routes for user listing, creator blocking, administrator promotion, photo metadata correction, and photo removal,
 - administrator visibility into shared backend photo listing and detail routes for moderation work,
+- public backend shared photo listing, detail, and image retrieval routes for archive browsing,
 - blocked-creator restrictions that still allow login and viewing while preventing new uploads and metadata edits,
 - a backend bootstrap script for creating the first administrator account or promoting an existing user,
 - a backend health endpoint,
 - a protected backend auth route for current-user access,
-- a frontend status page with backend connectivity and auth-state visibility,
+- a shared frontend archive browsing page on the home route with public photo detail pages,
+- a frontend redirect from `/all_photos` to the shared home-page archive listing,
 - backend test coverage for the implemented administration and moderation behavior,
-- project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, Sprint 3, and current Sprint 4 backend moderation scope.
+- backend test coverage for the implemented shared archive browsing behavior,
+- project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, Sprint 3, Sprint 4 moderation scope, and current Sprint 5 shared archive browsing scope.
 
-The current repository state is ready to continue Sprint 4 with administrator-facing frontend work and later archive browsing, search, and refinement work.
+The current repository state now includes the first shared archive browsing layer and is ready to continue the remaining Sprint 5 moderation-in-context work and later browsing/search refinements.
 
 ## Confirmed Decisions
 
@@ -48,6 +51,7 @@ The current repository state is ready to continue Sprint 4 with administrator-fa
 - Current implementation scope for Sprint 2: see [sprint-2.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-2.md)
 - Current implementation scope for Sprint 3: see [sprint-3.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-3.md)
 - Current implementation scope for Sprint 4: see [sprint-4.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-4.md)
+- Current implementation scope for Sprint 5: see [sprint-5.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-5.md)
 
 ## Current Repository Structure
 
@@ -63,7 +67,7 @@ The repository currently contains the main areas agreed for the project:
 
 ## Implemented Foundation So Far
 
-The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the Sprint 3 photo and creator-management scope, and the Sprint 4 admin backend moderation scope:
+The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the Sprint 3 photo and creator-management scope, the Sprint 4 moderation foundation scope, and the current Sprint 5 shared archive browsing foundation:
 
 ### Backend
 
@@ -74,6 +78,7 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - password hashing and credential verification,
 - JWT-based bearer-token authentication for Sprint 2,
 - an authenticated current-user route at `/api/v1/auth/me`,
+- public shared photo listing, detail, and image retrieval routes under `/api/v1/photos`,
 - an authenticated creator-only photo upload route at `/api/v1/photos`,
 - authenticated creator-owned photo listing, detail, metadata update, delete, and image retrieval routes under `/api/v1/photos`,
 - administrator visibility into backend photo list, detail, and image access for moderation work,
@@ -126,18 +131,21 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 
 ### Frontend
 
-- Next.js application foundation with root layout and a simple status page,
+- Next.js application foundation with root layout,
 - shared frontend styling foundation through global styles and design tokens,
 - a minimal layout component and shared frontend API base URL resolution,
 - a browser-side connectivity check from frontend to backend health endpoint,
 - login and registration pages,
 - frontend auth API calls for registration, login, and current-user lookup,
 - minimal client-side auth state using the Sprint 2 access token,
-- simple logged-in vs logged-out behavior on the frontend home page,
+- a shared archive listing on the frontend home page at `/`,
+- a shared public photo detail page at `/all_photos/[photoId]`,
+- a redirect from `/all_photos` back to the shared home-page archive listing,
 - a creator photo workspace at `/photos`,
 - a creator-owned photo detail view at `/photos/[photoId]`,
 - frontend upload, list, detail, edit, and delete flows aligned with the documented backend contract,
-- private photo rendering through an authenticated backend image endpoint without exposing storage references in the UI.
+- a basic administrator page for user listing and creator blocking,
+- photo rendering through a shared public image endpoint without exposing storage references in the UI.
 
 ### Local Development
 
@@ -155,10 +163,10 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 
 ## Next Recommended Step
 
-The next recommended implementation step is to continue Sprint 4 with the administrator-facing frontend moderation flow.
+The next recommended implementation step is to continue Sprint 5 with moderation-in-context work built on top of the shared archive browsing layer.
 
 The most natural next product and implementation area is:
 
-- a basic administrator moderation UI built on the now-documented backend moderation contract,
-- administrator-facing photo listing, metadata editing, removal, and creator-blocking controls,
-- integration of the frontend moderation experience with the implemented admin and photo endpoints.
+- administrator photo edit controls embedded into shared photo detail pages,
+- administrator photo removal controls embedded into shared photo detail pages,
+- keeping those administrator capabilities as an overlay on the shared browsing experience rather than building a separate browsing surface.

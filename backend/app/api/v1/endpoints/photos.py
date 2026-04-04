@@ -114,6 +114,21 @@ def get_visible_photo_or_404(
     return photo
 
 
+def get_photo_or_404(
+    *,
+    db: Session,
+    photo_id: int,
+) -> Photo:
+    photo = PhotoRepository(db).get_by_id(photo_id=photo_id)
+    if photo is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Photo not found.",
+        )
+
+    return photo
+
+
 @router.post(
     "",
     response_model=PhotoCreateResponse,
@@ -201,6 +216,12 @@ def upload_photo(
     return PhotoCreateResponse(photo=photo)
 
 
+@router.get("", response_model=PhotoListResponse)
+def list_shared_photos(db: DbSession) -> PhotoListResponse:
+    photos = PhotoRepository(db).list_all()
+    return PhotoListResponse(photos=photos)
+
+
 @owned_photos_router.get("/{user_id}/photos", response_model=PhotoListResponse)
 def list_owned_photos(
     user_id: int,
@@ -270,31 +291,25 @@ def delete_creator_photo(
 
 
 @router.get("/{photo_id}", response_model=PhotoResponse)
-def get_creator_photo(
+def get_shared_photo(
     photo_id: int,
-    current_user: CurrentPhotoViewer,
     db: DbSession,
 ) -> PhotoResponse:
-    photo = get_visible_photo_or_404(
+    photo = get_photo_or_404(
         db=db,
         photo_id=photo_id,
-        current_user_id=current_user.id,
-        current_user_role=current_user.role,
     )
     return PhotoResponse(photo=photo)
 
 
 @router.get("/{photo_id}/image")
-def get_creator_photo_image(
+def get_shared_photo_image(
     photo_id: int,
-    current_user: CurrentPhotoViewer,
     db: DbSession,
 ) -> FileResponse:
-    photo = get_visible_photo_or_404(
+    photo = get_photo_or_404(
         db=db,
         photo_id=photo_id,
-        current_user_id=current_user.id,
-        current_user_role=current_user.role,
     )
 
     if not photo.file_reference:
