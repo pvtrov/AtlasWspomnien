@@ -156,7 +156,56 @@ Body:
 
 # Photo Management
 
-This section defines the creator-facing photo contract together with the Sprint 4 rule that administrators may also view photo records and blocked creators may still view and delete their own records.
+This section defines the photo contract for both shared archive browsing and authenticated user-owned photo management.
+
+## Public Endpoints
+
+### `GET /api/v1/photos`
+
+#### Purpose
+
+Return the shared list of photos available for archive browsing.
+
+This endpoint is intended to support the future home-page and public archive experience.
+
+#### Authentication
+
+This endpoint is public and does not require authentication.
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+```json
+{
+  "photos": [
+    {
+      "id": 1,
+      "owner_id": 1,
+      "category_id": 1,
+      "description": "Historic market square in winter.",
+      "location_text": "Rynek",
+      "taken_year": 1982,
+      "taken_month": 1,
+      "taken_day": 14,
+      "category": {
+        "id": 1,
+        "slug": "ulica",
+        "name": "Ulica",
+        "parent_id": null
+      },
+      "created_at": "2026-04-04T10:00:00Z",
+      "updated_at": "2026-04-04T10:00:00Z"
+    }
+  ]
+}
+```
 
 ## Non-Public Endpoints
 
@@ -315,18 +364,17 @@ or
 }
 ```
 
-### `GET /api/v1/photos`
+### `GET /api/v1/{user_id}/photos`
 
 #### Purpose
 
-Return photos visible to the currently authenticated user.
+Return photos owned by one authenticated user for that same authenticated user.
 
 #### Authentication
 
 This endpoint requires a bearer access token for an authenticated creator or administrator.
 
-- creators receive only their own photos,
-- administrators receive all photos.
+The authenticated user may request this endpoint only for their own `user_id`.
 
 #### Request Headers
 
@@ -383,7 +431,7 @@ Body:
 
 ```json
 {
-  "detail": "Only creators and administrators can access photos."
+  "detail": "You can only access your own photos."
 }
 ```
 

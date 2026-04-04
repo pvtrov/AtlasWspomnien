@@ -13,6 +13,16 @@ export type AuthUser = {
   is_blocked: boolean;
 };
 
+export type AdminUser = {
+  id: number;
+  email: string;
+  username: string;
+  role: string;
+  is_blocked: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
 export type PhotoCategory = {
   id: number;
   slug: string;
@@ -60,6 +70,14 @@ export type CurrentUserResponse = {
   user: AuthUser;
 };
 
+export type AdminUserResponse = {
+  user: AdminUser;
+};
+
+export type AdminUserListResponse = {
+  users: AdminUser[];
+};
+
 export type PhotoUploadRequest = {
   file: File;
   category_slug: string;
@@ -91,6 +109,10 @@ export type BackendStatusResult = {
   label: string;
   message: string;
   tone: "neutral" | "success" | "failure";
+};
+
+export type BlockCreatorResponse = {
+  user: AdminUser;
 };
 
 function buildApiUrl(path: string): string {
@@ -247,8 +269,11 @@ export async function uploadPhoto(
   return responsePayload.photo;
 }
 
-export async function listCreatorPhotos(token: string): Promise<Photo[]> {
-  const response = await fetch(buildApiUrl("/api/v1/photos"), {
+export async function listOwnedPhotos(
+  token: string,
+  userId: number,
+): Promise<Photo[]> {
+  const response = await fetch(buildApiUrl(`/api/v1/${userId}/photos`), {
     headers: buildAuthorizedHeaders(token),
   });
 
@@ -319,6 +344,93 @@ export async function fetchCreatorPhotoImage(
   const response = await fetch(buildApiUrl(`/api/v1/photos/${photoId}/image`), {
     headers: buildAuthorizedHeaders(token),
   });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return response.blob();
+}
+
+export async function listAdminUsers(token: string): Promise<AdminUser[]> {
+  const response = await fetch(buildApiUrl("/api/v1/admin/users"), {
+    headers: buildAuthorizedHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as AdminUserListResponse;
+  return payload.users;
+}
+
+export async function updateAdminPhoto(
+  token: string,
+  photoId: number,
+  payload: PhotoUpdateRequest,
+): Promise<Photo> {
+  const response = await fetch(buildApiUrl(`/api/v1/admin/photos/${photoId}`), {
+    method: "PATCH",
+    headers: {
+      ...buildAuthorizedHeaders(token),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const responsePayload = (await response.json()) as PhotoResponse;
+  return responsePayload.photo;
+}
+
+export async function deleteAdminPhoto(
+  token: string,
+  photoId: number,
+): Promise<void> {
+  const response = await fetch(buildApiUrl(`/api/v1/admin/photos/${photoId}`), {
+    method: "DELETE",
+    headers: buildAuthorizedHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+}
+
+export async function blockCreator(
+  token: string,
+  userId: number,
+): Promise<AdminUser> {
+  const response = await fetch(
+    buildApiUrl(`/api/v1/admin/users/${userId}/block`),
+    {
+      method: "PATCH",
+      headers: buildAuthorizedHeaders(token),
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as BlockCreatorResponse;
+  return payload.user;
+}
+
+export async function fetchAdminPhotoImage(
+  token: string,
+  photoId: number,
+): Promise<Blob> {
+  const response = await fetch(
+    buildApiUrl(`/api/v1/admin/photos/${photoId}/image`),
+    {
+      headers: buildAuthorizedHeaders(token),
+    },
+  );
 
   if (!response.ok) {
     throw new Error(await readErrorMessage(response));

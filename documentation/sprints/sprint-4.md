@@ -99,6 +99,14 @@ Implement the first usable administrator-facing moderation flow in the frontend.
 - Keep the UI simple and operational.
 - Do not attempt to build a full admin console in this sprint.
 
+#### Implemented
+
+- added a basic administrator moderation page in the frontend,
+- added a simple administrator view of registered users,
+- added the first creator-blocking flow aligned with `PATCH /api/v1/admin/users/{user_id}/block`,
+- aligned the frontend owned-photo workspace with a dedicated authenticated `GET /api/v1/{user_id}/photos` endpoint so both creators and administrators manage only their own uploads in `/photos`,
+- kept cross-user photo moderation backend endpoints available for later use without exposing that moderation flow in the current frontend admin page.
+
 ### 3. Documentation Updates
 
 #### Goal

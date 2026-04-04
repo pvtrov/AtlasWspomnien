@@ -48,13 +48,18 @@ def block_creator(
     current_user: CurrentAdministrator,
     db: DbSession,
 ) -> UserResponse:
-    del current_user
     repository = UserRepository(db)
     user = repository.get_by_id(user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found.",
+        )
+
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot block your own account.",
         )
 
     if user.role != UserRole.CREATOR:
