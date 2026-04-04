@@ -12,7 +12,7 @@ Sprint 3 includes:
 
 - photo model foundation,
 - basic metadata representation for photos,
-- category or hierarchy foundation,
+- photo organization foundation,
 - backend photo upload flow,
 - local file storage handling for uploaded photos,
 - file reference persistence in the database,
@@ -41,7 +41,7 @@ At the end of Sprint 3, the project should provide:
 
 - a persisted photo model,
 - persisted basic photo metadata,
-- a category or hierarchy foundation suitable for later expansion,
+- a photo organization foundation suitable for later expansion,
 - backend upload support for creator-owned photos,
 - local file storage with database file reference linkage,
 - a frontend photo upload flow,
@@ -90,22 +90,41 @@ Implemented in the `feature/photo-domain-foundation` task slice:
 - added creation and read schemas for the photo domain foundation,
 - added indexes that support creator-owned access patterns and later date/location filtering work.
 
-### 2. Category or Hierarchy Foundation
+### 2. Photo Organization Foundation
 
 #### Goal
 
-Prepare the first structure for organizing archive materials by category or hierarchy.
+Prepare the first structure for organizing archive materials through a minimal category model that can support hierarchy later if needed.
 
 #### Tasks
 
-- Decide the initial representation of category or hierarchy nodes.
+- Decide the initial category representation for photo organization.
+- Ensure each photo belongs to one primary category in the first version.
+- Make the category structure future-ready for optional parent-child hierarchy support.
+- Use an initial MVP starter set of categories:
+  - `ulica`
+  - `budynek`
+  - `park`
 - Add the related backend model and migration if needed.
-- Connect photo records to the category or hierarchy structure.
+- Connect photo records to the category structure.
+- Keep location and date as separate metadata concerns.
 - Keep the first version simple and extendable.
 
 #### Agent Notes
 
-- The goal is structural readiness, not a full taxonomy management system.
+- The goal is structural readiness, not a full taxonomy or hierarchy management system.
+- Treat the initial category list as a starting set for MVP, not as a final closed taxonomy.
+
+#### Implementation Status
+
+Implemented in the `feature/photo-organization-foundation` task slice:
+
+- added a dedicated `photo_categories` table for minimal photo organization,
+- linked each photo record to one required primary category through `category_id`,
+- kept category hierarchy future-ready through an optional self-referencing `parent_id`,
+- seeded the initial MVP starter categories: `ulica`, `budynek`, and `park`,
+- kept `location_text` and historical date fields as separate photo metadata concerns,
+- extended backend photo schemas so category data is part of the photo contract without introducing hierarchy management behavior.
 
 ### 3. Backend Photo Upload
 
@@ -186,7 +205,7 @@ Keep repository documentation aligned with the archive content foundation and st
 The recommended order of execution inside the sprint is:
 
 1. photo domain foundation,
-2. category or hierarchy foundation,
+2. photo organization foundation,
 3. backend photo upload,
 4. frontend photo upload form,
 5. creator photo management,
@@ -203,5 +222,5 @@ Sprint 3 can be treated as complete when:
 - uploaded files are stored through the agreed local storage strategy,
 - creators can upload a photo through the application,
 - creators can retrieve their own uploaded photo records,
-- the category or hierarchy foundation exists for later expansion,
+- the photo organization foundation exists for later expansion,
 - documentation reflects the implemented archive content foundation.

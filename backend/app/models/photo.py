@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.photo_category import PhotoCategory
     from app.models.user import User
 
 
@@ -16,6 +17,7 @@ class Photo(Base):
     __tablename__ = "photos"
     __table_args__ = (
         Index("ix_photos_owner_id", "owner_id"),
+        Index("ix_photos_category_id", "category_id"),
         Index("ix_photos_location_text", "location_text"),
         Index("ix_photos_taken_on_parts", "taken_year", "taken_month", "taken_day"),
     )
@@ -23,6 +25,10 @@ class Photo(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     owner_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("photo_categories.id", ondelete="RESTRICT"),
         nullable=False,
     )
     description: Mapped[str] = mapped_column(String(2000), nullable=False)
@@ -44,3 +50,4 @@ class Photo(Base):
     )
 
     owner: Mapped[User] = relationship(back_populates="photos")
+    category: Mapped[PhotoCategory] = relationship(back_populates="photos")

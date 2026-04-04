@@ -3,7 +3,17 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+class PhotoCategoryRead(BaseModel):
+    id: int
+    slug: str
+    name: str
+    parent_id: int | None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class PhotoCreate(BaseModel):
+    category_slug: str = Field(min_length=1, max_length=100)
     description: str = Field(min_length=1, max_length=2000)
     location_text: str = Field(min_length=1, max_length=255)
     taken_year: int = Field(ge=1, le=9999)
@@ -22,12 +32,14 @@ class PhotoCreate(BaseModel):
 class PhotoRead(BaseModel):
     id: int
     owner_id: int
+    category_id: int
     description: str
     location_text: str
     taken_year: int
     taken_month: int | None
     taken_day: int | None
     file_reference: str | None
+    category: PhotoCategoryRead
     created_at: datetime
     updated_at: datetime
 
