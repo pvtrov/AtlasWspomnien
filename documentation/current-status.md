@@ -2,7 +2,7 @@
 
 ## Project State
 
-The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, the first Sprint 3 photo domain foundation slice, the Sprint 3 photo organization foundation slice, and the Sprint 3 backend photo upload slice.
+The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, the first Sprint 3 photo domain foundation slice, the Sprint 3 photo organization foundation slice, the Sprint 3 backend photo upload slice, and the first Sprint 3 frontend creator photo management slice.
 
 The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
@@ -15,16 +15,18 @@ The repository now includes:
 - a persisted photo domain foundation with creator ownership and first-version metadata fields,
 - a persisted photo organization foundation with primary category linkage and future-ready parent-child support,
 - a backend photo upload flow with local filesystem storage and persisted database file references,
+- creator-owned backend photo listing, detail, metadata edit, delete, and authenticated image retrieval,
 - backend creator registration and login endpoints,
 - password hashing and JWT-based authentication foundation,
 - frontend login and registration screens connected to backend authentication,
 - minimal frontend authenticated state handling,
+- a frontend creator photo workspace with upload, owned-photo list, detail, edit, and delete flows,
 - a backend health endpoint,
 - a protected backend auth route for current-user access,
 - a frontend status page with backend connectivity and auth-state visibility,
 - project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, and current Sprint 3 scope.
 
-The current repository state is ready to continue deeper into the remaining Sprint 3 product slices that build on the new photo domain, photo organization, and backend upload foundations.
+The current repository state is ready to move beyond the initial Sprint 3 creator upload and management slice into later archive browsing, search, moderation, and refinement work.
 
 ## Confirmed Decisions
 
@@ -55,7 +57,7 @@ The repository currently contains the main areas agreed for the project:
 
 ## Implemented Foundation So Far
 
-The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the first Sprint 3 photo domain foundation slice, the Sprint 3 photo organization foundation slice, and the Sprint 3 backend photo upload slice:
+The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the first Sprint 3 photo domain foundation slice, the Sprint 3 photo organization foundation slice, the Sprint 3 backend photo upload slice, and the first Sprint 3 creator photo management slice:
 
 ### Backend
 
@@ -67,8 +69,10 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - JWT-based bearer-token authentication for Sprint 2,
 - an authenticated current-user route at `/api/v1/auth/me`,
 - an authenticated creator-only photo upload route at `/api/v1/photos`,
+- authenticated creator-owned photo listing, detail, metadata update, delete, and image retrieval routes under `/api/v1/photos`,
 - local filesystem photo storage handling for uploaded archive materials,
-- backend validation for required Sprint 3 photo upload fields,
+- backend validation for Sprint 3 photo upload and edit fields, including optional empty descriptions,
+- request-validation and upload-flow logging for easier debugging when creator photo requests fail,
 - backend auth tests alongside the existing health smoke test coverage.
 
 ### Database
@@ -119,7 +123,11 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - login and registration pages,
 - frontend auth API calls for registration, login, and current-user lookup,
 - minimal client-side auth state using the Sprint 2 access token,
-- simple logged-in vs logged-out behavior on the frontend home page.
+- simple logged-in vs logged-out behavior on the frontend home page,
+- a creator photo workspace at `/photos`,
+- a creator-owned photo detail view at `/photos/[photoId]`,
+- frontend upload, list, detail, edit, and delete flows aligned with the documented backend contract,
+- private photo rendering through an authenticated backend image endpoint without exposing storage references in the UI.
 
 ### Local Development
 
@@ -137,10 +145,10 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 
 ## Next Recommended Step
 
-The next recommended implementation step is to continue deeper into Sprint 3 beyond the photo domain foundation and photo organization foundation.
+The next recommended implementation step is to move into the first post-creator-management product slice now that the Sprint 3 creator upload and management flow is working.
 
 The most natural next product and implementation area is:
 
-- frontend upload integration built on top of the backend photo upload contract,
-- authenticated creator-facing views built on top of the current auth and photo upload foundations,
-- additional protected backend routes tied to the next business slice.
+- public archive browsing built on top of the now-stable photo domain and creator-management foundation,
+- the first browse/search backend contracts for non-public and later public archive access,
+- follow-up refinement such as stronger frontend validation and broader automated test coverage for the creator photo flow.
