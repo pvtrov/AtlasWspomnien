@@ -17,7 +17,7 @@ Sprint 5 includes:
 - administrator photo edit and remove controls embedded into the shared photo detail layer,
 - documentation updates related to shared browsing and moderation-in-context.
 
-For the currently implemented Sprint 5 task slice in this repository, the delivered scope is the shared archive browsing foundation only. Administrator moderation controls in shared photo views remain a later Sprint 5 step.
+For the currently implemented Sprint 5 task slices in this repository, the delivered scope now includes both the shared archive browsing foundation and the first administrator moderation-in-context controls on the shared photo detail page.
 
 ## Out of Scope
 
@@ -77,14 +77,20 @@ Introduce the shared archive-viewing layer used by anonymous users, authenticate
 
 Allow administrators to moderate photos from the same shared photo detail layer used by other users.
 
-This part of Sprint 5 is not included in the currently implemented shared archive browsing task slice.
-
 #### Tasks
 
 - Add administrator-only photo edit controls to the shared photo detail page.
 - Add administrator-only photo removal controls to the shared photo detail page.
 - Keep the frontend aligned with the existing moderation endpoints documented in `documentation/api/endpoints.md`.
 - Ensure non-admin users do not see administrator controls.
+
+#### Implemented In This Task
+
+- kept the existing shared photo detail page as the single archive-viewing surface for all users,
+- added administrator-only metadata edit controls to that shared detail page,
+- added an administrator-only remove action to that shared detail page,
+- kept moderation wired to the documented `PATCH /api/v1/admin/photos/{photo_id}` and `DELETE /api/v1/admin/photos/{photo_id}` endpoints,
+- kept non-admin and anonymous users on the same shared detail layer without exposing moderation controls.
 
 #### Agent Notes
 
