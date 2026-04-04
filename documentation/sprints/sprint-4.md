@@ -2,9 +2,9 @@
 
 ## Sprint Goal
 
-Build the first administration and moderation foundation so administrators can manage problematic archive content, correct photo metadata, and block creators from adding further materials when necessary.
+Build the first administration and moderation foundation so administrators can manage users, block creators from adding further materials when necessary, and establish the backend moderation capabilities required for later photo moderation in shared archive views.
 
-Sprint 4 is focused on the minimum usable moderation flow for the MVP, not on a full administrative platform or advanced audit tooling.
+Sprint 4 is focused on the minimum usable moderation foundation for the MVP, not on a full administrative platform, advanced audit tooling, or shared-page photo moderation UI.
 
 ## In Scope
 
@@ -14,7 +14,8 @@ Sprint 4 includes:
 - backend support for administrator photo removal,
 - backend support for administrator metadata editing,
 - backend support for blocking creators,
-- the first basic administrator-facing moderation UI,
+- administrator user listing,
+- the first basic administrator-facing user moderation UI,
 - documentation updates related to administration and moderation.
 
 ## Out of Scope
@@ -26,6 +27,7 @@ Sprint 4 does not include:
 - bulk moderation actions,
 - advanced administrator dashboards,
 - rich user management beyond blocking creators,
+- administrator photo moderation controls embedded into shared archive photo pages,
 - advanced permission systems beyond the roles already established,
 - public archive browsing refinement,
 - search enhancements,
@@ -36,10 +38,10 @@ Sprint 4 does not include:
 At the end of Sprint 4, the project should provide:
 
 - backend role-aware administrator access for moderation actions,
-- administrator ability to remove problematic photos,
-- administrator ability to edit photo metadata,
+- administrator backend ability to remove problematic photos,
+- administrator backend ability to edit photo metadata,
 - administrator ability to block a creator from further uploads,
-- a basic frontend moderation flow for these actions,
+- administrator user listing and blocking in the frontend,
 - code and documentation ready for later moderation expansion if needed.
 
 ## Sprint 4 Task Breakdown
@@ -83,21 +85,19 @@ Implement the core backend moderation capabilities required by the MVP administr
 
 #### Goal
 
-Implement the first usable administrator-facing moderation flow in the frontend.
+Implement the first usable administrator-facing user moderation flow in the frontend.
 
 #### Tasks
 
 - Add a basic administrator moderation area or page.
-- Add a simple view of photos that can be moderated.
-- Add the first administrator metadata edit flow.
-- Add the first administrator photo removal flow.
+- Add a simple view of registered users.
 - Add the first creator-blocking flow.
-- Keep the frontend aligned with the documented moderation endpoints.
+- Keep the frontend aligned with the documented moderation endpoints for administrator user management.
 
 #### Agent Notes
 
 - Keep the UI simple and operational.
-- Do not attempt to build a full admin console in this sprint.
+- Do not attempt to build a full admin console or shared-page photo moderation UI in this sprint.
 
 #### Implemented
 
@@ -105,7 +105,8 @@ Implement the first usable administrator-facing moderation flow in the frontend.
 - added a simple administrator view of registered users,
 - added the first creator-blocking flow aligned with `PATCH /api/v1/admin/users/{user_id}/block`,
 - aligned the frontend owned-photo workspace with a dedicated authenticated `GET /api/v1/{user_id}/photos` endpoint so both creators and administrators manage only their own uploads in `/photos`,
-- kept cross-user photo moderation backend endpoints available for later use without exposing that moderation flow in the current frontend admin page.
+- kept cross-user photo moderation backend endpoints available for later use without exposing that moderation flow in the current frontend admin page,
+- intentionally deferred shared-page administrator photo edit/remove controls to the next product step built on shared archive browsing.
 
 ### 3. Documentation Updates
 
@@ -145,9 +146,11 @@ Parallel work can still be considered, but the frontend moderation flow should r
 Sprint 4 can be treated as complete when:
 
 - administrators can access moderation-only backend behavior,
-- administrators can remove problematic photos,
-- administrators can edit photo metadata,
+- administrators can remove problematic photos through backend moderation capabilities,
+- administrators can edit photo metadata through backend moderation capabilities,
 - administrators can block creators from further uploads,
 - blocked creators are prevented from further upload attempts,
-- a basic administrator moderation UI exists,
+- a basic administrator user moderation UI exists,
 - documentation reflects the implemented moderation foundation.
+
+These conditions are now substantially satisfied for the currently planned Sprint 4 scope.

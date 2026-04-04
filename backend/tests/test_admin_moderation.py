@@ -315,6 +315,82 @@ def test_non_admin_cannot_access_admin_user_listing(client, db_session: Session)
     }
 
 
+def test_non_admin_cannot_edit_photo_via_admin_moderation_route(
+    client,
+    db_session: Session,
+) -> None:
+    category = create_category(db_session)
+    create_user(
+        db_session,
+        email="creator@example.com",
+        username="creator-one",
+        role=UserRole.CREATOR,
+    )
+    owner = create_user(
+        db_session,
+        email="owner@example.com",
+        username="owner-one",
+        role=UserRole.CREATOR,
+    )
+    photo = create_photo(
+        db_session,
+        owner_id=owner.id,
+        category_id=category.id,
+    )
+    headers = login_headers(client, email="creator@example.com")
+
+    response = client.patch(
+        f"/api/v1/admin/photos/{photo.id}",
+        headers=headers,
+        json={
+            "category_slug": "ulica",
+            "description": "Attempted non-admin correction",
+            "location_text": "Rynek",
+            "taken_year": 1982,
+            "taken_month": 1,
+            "taken_day": 14,
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "detail": "Only administrators can access moderation routes.",
+    }
+
+
+def test_non_admin_cannot_delete_photo_via_admin_moderation_route(
+    client,
+    db_session: Session,
+) -> None:
+    category = create_category(db_session)
+    create_user(
+        db_session,
+        email="creator@example.com",
+        username="creator-one",
+        role=UserRole.CREATOR,
+    )
+    owner = create_user(
+        db_session,
+        email="owner@example.com",
+        username="owner-one",
+        role=UserRole.CREATOR,
+    )
+    photo = create_photo(
+        db_session,
+        owner_id=owner.id,
+        category_id=category.id,
+    )
+    headers = login_headers(client, email="creator@example.com")
+
+    response = client.delete(f"/api/v1/admin/photos/{photo.id}", headers=headers)
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "detail": "Only administrators can access moderation routes.",
+    }
+    assert db_session.scalar(select(Photo).where(Photo.id == photo.id)) is not None
+
+
 def test_admin_can_list_only_own_photos_via_owned_route(client, db_session: Session) -> None:
     category = create_category(db_session)
     admin = create_user(
