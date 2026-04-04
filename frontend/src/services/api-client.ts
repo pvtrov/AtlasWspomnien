@@ -36,6 +36,8 @@ export type Photo = {
   category_id: number;
   description: string;
   location_text: string;
+  latitude: number | null;
+  longitude: number | null;
   taken_year: number;
   taken_month: number | null;
   taken_day: number | null;
@@ -83,6 +85,8 @@ export type PhotoUploadRequest = {
   category_slug: string;
   description: string;
   location_text: string;
+  latitude?: number;
+  longitude?: number;
   taken_year: number;
   taken_month?: number;
   taken_day?: number;
@@ -92,9 +96,17 @@ export type PhotoUpdateRequest = {
   category_slug: string;
   description: string;
   location_text: string;
+  latitude?: number | null;
+  longitude?: number | null;
   taken_year: number;
   taken_month?: number;
   taken_day?: number;
+};
+
+export type GeocodingResult = {
+  latitude: number;
+  longitude: number;
+  label: string;
 };
 
 export type PhotoResponse = {
@@ -250,6 +262,14 @@ export async function uploadPhoto(
   formData.append("description", payload.description);
   formData.append("location_text", payload.location_text);
   formData.append("taken_year", String(payload.taken_year));
+
+  if (payload.latitude !== undefined) {
+    formData.append("latitude", String(payload.latitude));
+  }
+
+  if (payload.longitude !== undefined) {
+    formData.append("longitude", String(payload.longitude));
+  }
 
   if (payload.taken_month !== undefined) {
     formData.append("taken_month", String(payload.taken_month));
@@ -448,4 +468,46 @@ export async function fetchAdminPhotoImage(
   }
 
   return response.blob();
+}
+
+export async function geocodeLocation(
+  locationText: string,
+): Promise<GeocodingResult | null> {
+  const trimmedLocation = locationText.trim();
+
+  if (!trimmedLocation) {
+    return null;
+  }
+
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("limit", "1");
+  url.searchParams.set("q", trimmedLocation);
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Could not geocode this location.");
+  }
+
+  const payload = (await response.json()) as Array<{
+    lat: string;
+    lon: string;
+    display_name: string;
+  }>;
+  const firstMatch = payload[0];
+
+  if (!firstMatch) {
+    return null;
+  }
+
+  return {
+    latitude: Number(firstMatch.lat),
+    longitude: Number(firstMatch.lon),
+    label: firstMatch.display_name,
+  };
 }

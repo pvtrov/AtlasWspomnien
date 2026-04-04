@@ -16,6 +16,8 @@ class PhotoCreate(BaseModel):
     category_slug: str = Field(min_length=1, max_length=100)
     description: str = Field(default="", max_length=2000)
     location_text: str = Field(min_length=1, max_length=255)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
     taken_year: int = Field(ge=1, le=9999)
     taken_month: int | None = Field(default=None, ge=1, le=12)
     taken_day: int | None = Field(default=None, ge=1, le=31)
@@ -25,6 +27,8 @@ class PhotoCreate(BaseModel):
     def validate_partial_date(self) -> "PhotoCreate":
         if self.taken_day is not None and self.taken_month is None:
             raise ValueError("taken_day requires taken_month.")
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("latitude and longitude must both be provided together.")
 
         return self
 
@@ -35,6 +39,8 @@ class PhotoRead(BaseModel):
     category_id: int
     description: str
     location_text: str
+    latitude: float | None
+    longitude: float | None
     taken_year: int
     taken_month: int | None
     taken_day: int | None
@@ -53,6 +59,8 @@ class PhotoUpdate(BaseModel):
     category_slug: str = Field(min_length=1, max_length=100)
     description: str = Field(default="", max_length=2000)
     location_text: str = Field(min_length=1, max_length=255)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
     taken_year: int = Field(ge=1, le=9999)
     taken_month: int | None = Field(default=None, ge=1, le=12)
     taken_day: int | None = Field(default=None, ge=1, le=31)
@@ -61,6 +69,8 @@ class PhotoUpdate(BaseModel):
     def validate_partial_date(self) -> "PhotoUpdate":
         if self.taken_day is not None and self.taken_month is None:
             raise ValueError("taken_day requires taken_month.")
+        if (self.latitude is None) != (self.longitude is None):
+            raise ValueError("latitude and longitude must both be provided together.")
 
         return self
 

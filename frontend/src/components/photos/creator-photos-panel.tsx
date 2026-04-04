@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { PhotoLocationEditor } from "@/components/photos/photo-location-editor";
 import { PHOTO_CATEGORY_OPTIONS } from "@/lib/photo-categories";
 import {
   type Photo,
@@ -17,6 +18,8 @@ type UploadFormValues = {
   category_slug: string;
   description: string;
   location_text: string;
+  latitude: string;
+  longitude: string;
   taken_year: string;
   taken_month: string;
   taken_day: string;
@@ -27,6 +30,8 @@ const initialUploadValues: UploadFormValues = {
   category_slug: PHOTO_CATEGORY_OPTIONS[0].slug,
   description: "",
   location_text: "",
+  latitude: "",
+  longitude: "",
   taken_year: "",
   taken_month: "",
   taken_day: "",
@@ -46,6 +51,20 @@ function formatPhotoDate(photo: Photo): string {
   }
 
   return parts.join("-");
+}
+
+function buildCreateCoordinates(values: UploadFormValues): {
+  latitude?: number;
+  longitude?: number;
+} {
+  if (!values.latitude.trim() && !values.longitude.trim()) {
+    return {};
+  }
+
+  return {
+    latitude: Number(values.latitude),
+    longitude: Number(values.longitude),
+  };
 }
 
 export function CreatorPhotosPanel() {
@@ -130,6 +149,7 @@ export function CreatorPhotosPanel() {
         category_slug: values.category_slug,
         description: values.description.trim(),
         location_text: values.location_text.trim(),
+        ...buildCreateCoordinates(values),
         taken_year: Number(values.taken_year),
         taken_month: values.taken_month ? Number(values.taken_month) : undefined,
         taken_day: values.taken_day ? Number(values.taken_day) : undefined,
@@ -215,17 +235,6 @@ export function CreatorPhotosPanel() {
             </div>
 
             <div className="auth-field">
-              <label htmlFor="location_text">Location</label>
-              <input
-                id="location_text"
-                name="location_text"
-                type="text"
-                value={values.location_text}
-                onChange={handleFieldChange}
-              />
-            </div>
-
-            <div className="auth-field">
               <label htmlFor="taken_year">Year</label>
               <input
                 id="taken_year"
@@ -265,6 +274,30 @@ export function CreatorPhotosPanel() {
               />
             </div>
           </div>
+
+          <PhotoLocationEditor
+            locationText={values.location_text}
+            latitudeText={values.latitude}
+            longitudeText={values.longitude}
+            onLocationTextChange={(value) =>
+              setValues((currentValues) => ({
+                ...currentValues,
+                location_text: value,
+              }))
+            }
+            onLatitudeTextChange={(value) =>
+              setValues((currentValues) => ({
+                ...currentValues,
+                latitude: value,
+              }))
+            }
+            onLongitudeTextChange={(value) =>
+              setValues((currentValues) => ({
+                ...currentValues,
+                longitude: value,
+              }))
+            }
+          />
 
           <div className="auth-field">
             <label htmlFor="description">Description</label>
