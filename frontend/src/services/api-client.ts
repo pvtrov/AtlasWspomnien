@@ -13,6 +13,28 @@ export type AuthUser = {
   is_blocked: boolean;
 };
 
+export type PhotoCategory = {
+  id: number;
+  slug: string;
+  name: string;
+  parent_id: number | null;
+};
+
+export type Photo = {
+  id: number;
+  owner_id: number;
+  category_id: number;
+  description: string;
+  location_text: string;
+  taken_year: number;
+  taken_month: number | null;
+  taken_day: number | null;
+  file_reference?: string | null;
+  category: PhotoCategory;
+  created_at: string;
+  updated_at: string;
+};
+
 export type RegisterRequest = {
   username: string;
   email: string;
@@ -38,6 +60,33 @@ export type CurrentUserResponse = {
   user: AuthUser;
 };
 
+export type PhotoUploadRequest = {
+  file: File;
+  category_slug: string;
+  description: string;
+  location_text: string;
+  taken_year: number;
+  taken_month?: number;
+  taken_day?: number;
+};
+
+export type PhotoUpdateRequest = {
+  category_slug: string;
+  description: string;
+  location_text: string;
+  taken_year: number;
+  taken_month?: number;
+  taken_day?: number;
+};
+
+export type PhotoResponse = {
+  photo: Photo;
+};
+
+export type PhotoListResponse = {
+  photos: Photo[];
+};
+
 export type BackendStatusResult = {
   label: string;
   message: string;
@@ -51,11 +100,31 @@ function buildApiUrl(path: string): string {
 
 async function readErrorMessage(response: Response): Promise<string> {
   try {
-    const payload = (await response.json()) as { detail?: string };
-    return payload.detail || `Request failed with HTTP ${response.status}.`;
+    const payload = (await response.json()) as {
+      detail?: string | Array<{ msg?: string }>;
+    };
+
+    if (typeof payload.detail === "string" && payload.detail) {
+      return payload.detail;
+    }
+
+    if (Array.isArray(payload.detail) && payload.detail.length > 0) {
+      const firstMessage = payload.detail[0]?.msg;
+      if (firstMessage) {
+        return firstMessage;
+      }
+    }
+
+    return `Request failed with HTTP ${response.status}.`;
   } catch {
     return `Request failed with HTTP ${response.status}.`;
   }
+}
+
+function buildAuthorizedHeaders(token: string): HeadersInit {
+  return {
+    Authorization: `Bearer ${token}`,
+  };
 }
 
 export async function getBackendStatus(
@@ -134,9 +203,7 @@ export async function loginUser(payload: LoginRequest): Promise<LoginResponse> {
 
 export async function getCurrentUser(token: string): Promise<AuthUser> {
   const response = await fetch(buildApiUrl("/api/v1/auth/me"), {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: buildAuthorizedHeaders(token),
   });
 
   if (!response.ok) {
@@ -145,4 +212,117 @@ export async function getCurrentUser(token: string): Promise<AuthUser> {
 
   const payload = (await response.json()) as CurrentUserResponse;
   return payload.user;
+}
+
+export async function uploadPhoto(
+  token: string,
+  payload: PhotoUploadRequest,
+): Promise<Photo> {
+  const formData = new FormData();
+  formData.append("file", payload.file);
+  formData.append("category_slug", payload.category_slug);
+  formData.append("description", payload.description);
+  formData.append("location_text", payload.location_text);
+  formData.append("taken_year", String(payload.taken_year));
+
+  if (payload.taken_month !== undefined) {
+    formData.append("taken_month", String(payload.taken_month));
+  }
+
+  if (payload.taken_day !== undefined) {
+    formData.append("taken_day", String(payload.taken_day));
+  }
+
+  const response = await fetch(buildApiUrl("/api/v1/photos"), {
+    method: "POST",
+    headers: buildAuthorizedHeaders(token),
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const responsePayload = (await response.json()) as PhotoResponse;
+  return responsePayload.photo;
+}
+
+export async function listCreatorPhotos(token: string): Promise<Photo[]> {
+  const response = await fetch(buildApiUrl("/api/v1/photos"), {
+    headers: buildAuthorizedHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as PhotoListResponse;
+  return payload.photos;
+}
+
+export async function getCreatorPhoto(
+  token: string,
+  photoId: number,
+): Promise<Photo> {
+  const response = await fetch(buildApiUrl(`/api/v1/photos/${photoId}`), {
+    headers: buildAuthorizedHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const payload = (await response.json()) as PhotoResponse;
+  return payload.photo;
+}
+
+export async function updateCreatorPhoto(
+  token: string,
+  photoId: number,
+  payload: PhotoUpdateRequest,
+): Promise<Photo> {
+  const response = await fetch(buildApiUrl(`/api/v1/photos/${photoId}`), {
+    method: "PATCH",
+    headers: {
+      ...buildAuthorizedHeaders(token),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  const responsePayload = (await response.json()) as PhotoResponse;
+  return responsePayload.photo;
+}
+
+export async function deleteCreatorPhoto(
+  token: string,
+  photoId: number,
+): Promise<void> {
+  const response = await fetch(buildApiUrl(`/api/v1/photos/${photoId}`), {
+    method: "DELETE",
+    headers: buildAuthorizedHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+}
+
+export async function fetchCreatorPhotoImage(
+  token: string,
+  photoId: number,
+): Promise<Blob> {
+  const response = await fetch(buildApiUrl(`/api/v1/photos/${photoId}/image`), {
+    headers: buildAuthorizedHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return response.blob();
 }

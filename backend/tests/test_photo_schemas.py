@@ -5,7 +5,7 @@ from pydantic import ValidationError
 
 from app.models.photo import Photo
 from app.models.photo_category import PhotoCategory
-from app.schemas.photo import PhotoCreate, PhotoRead
+from app.schemas.photo import PhotoCreate, PhotoRead, PhotoUpdate
 
 
 def test_photo_create_accepts_full_metadata() -> None:
@@ -40,6 +40,28 @@ def test_photo_create_accepts_year_only_date() -> None:
     assert payload.taken_month is None
     assert payload.taken_day is None
     assert payload.file_reference is None
+
+
+def test_photo_create_allows_empty_description() -> None:
+    payload = PhotoCreate(
+        category_slug="park",
+        description="",
+        location_text="North District",
+        taken_year=1950,
+    )
+
+    assert payload.description == ""
+
+
+def test_photo_update_allows_empty_description() -> None:
+    payload = PhotoUpdate(
+        category_slug="budynek",
+        description="",
+        location_text="Central Parish",
+        taken_year=1961,
+    )
+
+    assert payload.description == ""
 
 
 def test_photo_create_rejects_day_without_month() -> None:

@@ -196,7 +196,7 @@ Fields:
 
 - `file`: required uploaded file,
 - `category_slug`: required string,
-- `description`: required string,
+- `description`: optional string,
 - `location_text`: required string,
 - `taken_year`: required integer,
 - `taken_month`: optional integer,
@@ -218,7 +218,7 @@ taken_day=14
 
 - `file` is required,
 - `category_slug` is required and must match an existing backend photo category,
-- `description` is required,
+- `description` may be empty,
 - `location_text` is required,
 - `taken_year` is required,
 - `taken_month`, if provided, must be between `1` and `12`,
@@ -248,7 +248,6 @@ Body:
     "taken_year": 1982,
     "taken_month": 1,
     "taken_day": 14,
-    "file_reference": "photos/1/3d0eb0cc1b5f4d9f82d989b0fc4ecaf3.jpg",
     "category": {
       "id": 1,
       "slug": "ulica",
@@ -260,6 +259,12 @@ Body:
   }
 }
 ```
+
+#### Response Notes
+
+- the backend keeps the persisted `file_reference` internally as part of the storage strategy,
+- the frontend should treat photo file handling as a separate concern and should not display storage references to end users,
+- the creator-owned photo image can be retrieved through the dedicated authenticated image endpoint documented below.
 
 #### Error Responses
 
@@ -291,7 +296,7 @@ or
 
 ```json
 {
-  "detail": "Only creators can upload photos."
+  "detail": "Only creators can manage photos."
 }
 ```
 
@@ -314,6 +319,380 @@ or
       "type": "value_error"
     }
   ]
+}
+```
+
+### `GET /api/v1/photos`
+
+#### Purpose
+
+Return the list of photos owned by the currently authenticated creator.
+
+#### Authentication
+
+This endpoint requires a bearer access token for an authenticated creator.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+```json
+{
+  "photos": [
+    {
+      "id": 1,
+      "owner_id": 1,
+      "category_id": 1,
+      "description": "Historic market square in winter.",
+      "location_text": "Rynek",
+      "taken_year": 1982,
+      "taken_month": 1,
+      "taken_day": 14,
+      "category": {
+        "id": 1,
+        "slug": "ulica",
+        "name": "Ulica",
+        "parent_id": null
+      },
+      "created_at": "2026-04-04T10:00:00Z",
+      "updated_at": "2026-04-04T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### Error Responses
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only creators can manage photos."
+}
+```
+
+### `GET /api/v1/photos/{photo_id}`
+
+#### Purpose
+
+Return one photo owned by the currently authenticated creator.
+
+#### Authentication
+
+This endpoint requires a bearer access token for an authenticated creator.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+```json
+{
+  "photo": {
+    "id": 1,
+    "owner_id": 1,
+    "category_id": 1,
+    "description": "Historic market square in winter.",
+    "location_text": "Rynek",
+    "taken_year": 1982,
+    "taken_month": 1,
+    "taken_day": 14,
+    "category": {
+      "id": 1,
+      "slug": "ulica",
+      "name": "Ulica",
+      "parent_id": null
+    },
+    "created_at": "2026-04-04T10:00:00Z",
+    "updated_at": "2026-04-04T10:00:00Z"
+  }
+}
+```
+
+#### Error Responses
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only creators can manage photos."
+}
+```
+
+`404 Not Found`
+
+```json
+{
+  "detail": "Photo not found."
+}
+```
+
+### `GET /api/v1/photos/{photo_id}/image`
+
+#### Purpose
+
+Return the binary image file for one photo owned by the currently authenticated creator.
+
+#### Authentication
+
+This endpoint requires a bearer access token for an authenticated creator.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+- binary image content with the detected media type.
+
+#### Error Responses
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only creators can manage photos."
+}
+```
+
+`404 Not Found`
+
+```json
+{
+  "detail": "Photo file not found."
+}
+```
+
+or
+
+```json
+{
+  "detail": "Photo not found."
+}
+```
+
+### `PATCH /api/v1/photos/{photo_id}`
+
+#### Purpose
+
+Update metadata for one photo owned by the currently authenticated creator.
+
+#### Authentication
+
+This endpoint requires a bearer access token for an authenticated creator.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+#### Request Body
+
+```json
+{
+  "category_slug": "ulica",
+  "description": "Historic market square after renovation.",
+  "location_text": "Rynek",
+  "taken_year": 1982,
+  "taken_month": 1,
+  "taken_day": 14
+}
+```
+
+#### Request Notes
+
+- this first Sprint 3 edit flow covers metadata only,
+- `description` may be empty in this first version,
+- file replacement is out of scope for this endpoint,
+- the same validation rules used by photo creation apply to category and date fields.
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+```json
+{
+  "photo": {
+    "id": 1,
+    "owner_id": 1,
+    "category_id": 1,
+    "description": "Historic market square after renovation.",
+    "location_text": "Rynek",
+    "taken_year": 1982,
+    "taken_month": 1,
+    "taken_day": 14,
+    "category": {
+      "id": 1,
+      "slug": "ulica",
+      "name": "Ulica",
+      "parent_id": null
+    },
+    "created_at": "2026-04-04T10:00:00Z",
+    "updated_at": "2026-04-04T11:30:00Z"
+  }
+}
+```
+
+#### Error Responses
+
+`400 Bad Request`
+
+```json
+{
+  "detail": "Unknown photo category."
+}
+```
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only creators can manage photos."
+}
+```
+
+`404 Not Found`
+
+```json
+{
+  "detail": "Photo not found."
+}
+```
+
+`422 Unprocessable Entity`
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["taken_day"],
+      "msg": "Value error, taken_day requires taken_month.",
+      "type": "value_error"
+    }
+  ]
+}
+```
+
+### `DELETE /api/v1/photos/{photo_id}`
+
+#### Purpose
+
+Delete one photo owned by the currently authenticated creator.
+
+#### Authentication
+
+This endpoint requires a bearer access token for an authenticated creator.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Success Response
+
+Status:
+
+```text
+204 No Content
+```
+
+#### Error Responses
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only creators can manage photos."
+}
+```
+
+`404 Not Found`
+
+```json
+{
+  "detail": "Photo not found."
 }
 ```
 

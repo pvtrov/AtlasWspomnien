@@ -74,7 +74,7 @@ def require_creator(current_user: CurrentUser) -> User:
     if current_user.role != UserRole.CREATOR:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only creators can upload photos.",
+            detail="Only creators can manage photos.",
         )
 
     return current_user

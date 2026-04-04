@@ -26,14 +26,17 @@ class PhotoStorageService:
         return relative_path.as_posix()
 
     def delete_photo(self, file_reference: str) -> None:
-        reference_path = Path(file_reference)
-        if reference_path.parts[:1] != ("photos",):
-            return
-
-        relative_storage_path = Path(*reference_path.parts[1:])
-        destination = self.storage_root / relative_storage_path
+        destination = self.resolve_photo_path(file_reference)
         if destination.exists():
             destination.unlink()
+
+    def resolve_photo_path(self, file_reference: str) -> Path:
+        reference_path = Path(file_reference)
+        if reference_path.parts[:1] != ("photos",):
+            return self.storage_root / "__missing__"
+
+        relative_storage_path = Path(*reference_path.parts[1:])
+        return self.storage_root / relative_storage_path
 
     @staticmethod
     def _detect_extension(upload_file: UploadFile) -> str:
