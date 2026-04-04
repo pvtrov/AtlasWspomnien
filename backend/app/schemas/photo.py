@@ -14,7 +14,7 @@ class PhotoCategoryRead(BaseModel):
 
 class PhotoCreate(BaseModel):
     category_slug: str = Field(min_length=1, max_length=100)
-    description: str = Field(min_length=1, max_length=2000)
+    description: str = Field(default="", max_length=2000)
     location_text: str = Field(min_length=1, max_length=255)
     taken_year: int = Field(ge=1, le=9999)
     taken_month: int | None = Field(default=None, ge=1, le=12)
@@ -48,3 +48,27 @@ class PhotoRead(BaseModel):
 
 class PhotoCreateResponse(BaseModel):
     photo: PhotoRead
+
+
+class PhotoUpdate(BaseModel):
+    category_slug: str = Field(min_length=1, max_length=100)
+    description: str = Field(default="", max_length=2000)
+    location_text: str = Field(min_length=1, max_length=255)
+    taken_year: int = Field(ge=1, le=9999)
+    taken_month: int | None = Field(default=None, ge=1, le=12)
+    taken_day: int | None = Field(default=None, ge=1, le=31)
+
+    @model_validator(mode="after")
+    def validate_partial_date(self) -> "PhotoUpdate":
+        if self.taken_day is not None and self.taken_month is None:
+            raise ValueError("taken_day requires taken_month.")
+
+        return self
+
+
+class PhotoResponse(BaseModel):
+    photo: PhotoRead
+
+
+class PhotoListResponse(BaseModel):
+    photos: list[PhotoRead]

@@ -174,6 +174,16 @@ Allow creators to submit a new photo with the required metadata through the fron
 
 - Focus on a working creator upload flow, not final UI polish.
 
+#### Implementation Status
+
+Implemented in the `feature/frontend-creator-photo-flow` task slice:
+
+- added a frontend creator photo workspace at `/photos`,
+- added a frontend upload form for the required Sprint 3 metadata and image file,
+- connected the upload form to the documented backend multipart upload endpoint,
+- added simple success and failure feedback for upload attempts,
+- kept category selection aligned with the seeded Sprint 3 category set: `ulica`, `budynek`, and `park`.
+
 ### 5. Creator Photo Management
 
 #### Goal
@@ -194,6 +204,18 @@ Allow creators to view and manage their own uploaded materials in the first usab
 - Keep the first management flow simple.
 - Listing, detail view, edit, and delete should all remain basic and aligned with MVP needs for this sprint's first pass.
 
+#### Implementation Status
+
+Implemented in the `feature/frontend-creator-photo-flow` task slice:
+
+- added creator-owned backend endpoints for photo listing, detail retrieval, metadata update, delete, and authenticated image retrieval,
+- documented the Sprint 3 creator-owned photo management contract in `documentation/api/endpoints.md`,
+- added a basic frontend list of the authenticated creator's uploaded photos,
+- added a basic frontend detail view for a creator-owned photo,
+- added the first edit flow for creator-owned photo metadata only,
+- added the first delete flow for a creator-owned photo,
+- kept the UI simple and intentionally limited to creator-owned management without public archive browsing or admin moderation behavior.
+
 ### 6. Documentation Updates
 
 #### Goal
@@ -211,6 +233,13 @@ Keep repository documentation aligned with the archive content foundation and st
 
 - Documentation changes are part of the sprint.
 - Do not auto-update `current-status.md` without asking first.
+
+#### Implementation Status
+
+Implemented in the `feature/frontend-creator-photo-flow` task slice:
+
+- updated `documentation/api/endpoints.md` to document the creator-owned photo management contract required by the Sprint 3 frontend flow,
+- updated this sprint document to reflect the completed frontend upload and creator-owned photo management slices.
 
 ## Suggested Delivery Order Inside Sprint 3
 

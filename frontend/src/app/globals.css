@@ -32,6 +32,14 @@ a {
   margin-bottom: 3rem;
 }
 
+.page-header__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -48,6 +56,23 @@ a {
   border-radius: 999px;
   background: var(--color-accent);
   box-shadow: 0 0 0 0.35rem rgba(189, 127, 74, 0.18);
+}
+
+.top-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.top-nav a {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.top-nav a:hover {
+  text-decoration: underline;
 }
 
 .hero {
@@ -167,7 +192,25 @@ a {
   font: inherit;
 }
 
+.auth-field select,
+.auth-field textarea {
+  width: 100%;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid rgba(72, 52, 37, 0.22);
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-text);
+  font: inherit;
+}
+
 .auth-field input:focus {
+  outline: 2px solid rgba(143, 79, 29, 0.24);
+  outline-offset: 2px;
+  border-color: var(--color-accent-strong);
+}
+
+.auth-field select:focus,
+.auth-field textarea:focus {
   outline: 2px solid rgba(143, 79, 29, 0.24);
   outline-offset: 2px;
   border-color: var(--color-accent-strong);
@@ -237,6 +280,177 @@ a {
   text-decoration: underline;
 }
 
+.inline-link {
+  color: var(--color-accent-strong);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.inline-link:hover {
+  text-decoration: underline;
+}
+
+.photo-workspace,
+.photo-detail-layout {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+}
+
+.photo-panel {
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1.25rem 2.5rem rgba(38, 30, 24, 0.08);
+}
+
+.photo-panel h1,
+.photo-panel h2,
+.photo-card h3 {
+  margin: 0;
+}
+
+.photo-panel__heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.photo-panel__meta {
+  margin: 0;
+  color: var(--color-text-soft);
+  font-size: 0.95rem;
+}
+
+.photo-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.photo-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.photo-form__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.photo-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.photo-list__empty {
+  margin: 0;
+  color: var(--color-text-soft);
+}
+
+.photo-card {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.photo-card__image,
+.photo-detail__image,
+.photo-image--empty {
+  width: 100%;
+  border-radius: 1rem;
+  background: rgba(216, 200, 183, 0.35);
+  object-fit: cover;
+}
+
+.photo-card__image,
+.photo-image--empty {
+  aspect-ratio: 4 / 3;
+}
+
+.photo-detail__image {
+  margin: 1rem 0 1.5rem;
+  max-height: 32rem;
+}
+
+.photo-image--empty {
+  display: grid;
+  place-items: center;
+  min-height: 12rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 1rem;
+}
+
+.photo-card__body {
+  display: grid;
+  gap: 0.65rem;
+  align-content: start;
+}
+
+.photo-card__body p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.photo-card__category,
+.photo-card__meta {
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.photo-detail__meta {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0 0 1.5rem;
+}
+
+.photo-detail__meta div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.photo-detail__meta dt {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.photo-detail__meta dd {
+  margin: 0;
+}
+
+.button {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.85rem 1.05rem;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.button--danger {
+  background: #b4493d;
+}
+
+.button--danger:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .status-card__actions {
   display: flex;
   flex-wrap: wrap;
@@ -286,7 +500,17 @@ a {
     padding: 1.25rem;
   }
 
-  .auth-form {
+  .auth-form,
+  .photo-panel {
     padding: 1.25rem;
+  }
+
+  .photo-card {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-workspace,
+  .photo-detail-layout {
+    grid-template-columns: 1fr;
   }
 }
