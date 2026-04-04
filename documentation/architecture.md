@@ -92,7 +92,9 @@ The current architectural direction is:
 - `backend/` contains the API and business logic,
 - PostgreSQL stores structured application data,
 - Docker Compose orchestrates the local multi-service development environment,
-- image files will be handled separately from the relational database,
+- image files are handled separately from the relational database,
+- uploaded photos are currently planned to be stored on local filesystem storage mounted into the backend container,
+- photo metadata and file reference information are stored in PostgreSQL,
 - `documentation/` stores project-facing knowledge and technical decisions.
 
 ## Container Responsibilities
@@ -104,6 +106,8 @@ The planned local container responsibilities are:
 - `postgres`: provides persistent relational storage for application data.
 
 Object storage for uploaded files is expected to be introduced later as a separate service when file handling is implemented.
+
+The current storage decision for uploaded photos is documented in [002-photo-storage-strategy.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/decisions/002-photo-storage-strategy.md).
 
 ## Documentation Principle
 
