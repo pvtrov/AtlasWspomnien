@@ -15,6 +15,8 @@ class PhotoRepository:
         category_id: int,
         description: str,
         location_text: str,
+        latitude: float | None,
+        longitude: float | None,
         taken_year: int,
         taken_month: int | None,
         taken_day: int | None,
@@ -25,6 +27,8 @@ class PhotoRepository:
             category_id=category_id,
             description=description,
             location_text=location_text,
+            latitude=latitude,
+            longitude=longitude,
             taken_year=taken_year,
             taken_month=taken_month,
             taken_day=taken_day,
@@ -78,6 +82,8 @@ class PhotoRepository:
         category_id: int,
         description: str,
         location_text: str,
+        latitude: float | None,
+        longitude: float | None,
         taken_year: int,
         taken_month: int | None,
         taken_day: int | None,
@@ -85,6 +91,8 @@ class PhotoRepository:
         photo.category_id = category_id
         photo.description = description
         photo.location_text = location_text
+        photo.latitude = latitude
+        photo.longitude = longitude
         photo.taken_year = taken_year
         photo.taken_month = taken_month
         photo.taken_day = taken_day

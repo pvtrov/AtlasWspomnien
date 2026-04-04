@@ -191,6 +191,8 @@ Body:
       "category_id": 1,
       "description": "Historic market square in winter.",
       "location_text": "Rynek",
+      "latitude": 50.061947,
+      "longitude": 19.936856,
       "taken_year": 1982,
       "taken_month": 1,
       "taken_day": 14,
@@ -245,6 +247,8 @@ Fields:
 - `category_slug`: required string,
 - `description`: optional string,
 - `location_text`: required string,
+- `latitude`: optional float,
+- `longitude`: optional float,
 - `taken_year`: required integer,
 - `taken_month`: optional integer,
 - `taken_day`: optional integer.
@@ -256,6 +260,8 @@ file=<binary image>
 category_slug=ulica
 description=Historic market square in winter.
 location_text=Rynek
+latitude=50.061947
+longitude=19.936856
 taken_year=1982
 taken_month=1
 taken_day=14
@@ -267,6 +273,9 @@ taken_day=14
 - `category_slug` is required and must match an existing backend photo category,
 - `description` may be empty,
 - `location_text` is required,
+- `latitude` and `longitude` are optional and must be provided together when present,
+- `latitude`, if provided, must be between `-90` and `90`,
+- `longitude`, if provided, must be between `-180` and `180`,
 - `taken_year` is required,
 - `taken_month`, if provided, must be between `1` and `12`,
 - `taken_day`, if provided, must be between `1` and `31`,
@@ -292,6 +301,8 @@ Body:
     "category_id": 1,
     "description": "Historic market square in winter.",
     "location_text": "Rynek",
+    "latitude": 50.061947,
+    "longitude": 19.936856,
     "taken_year": 1982,
     "taken_month": 1,
     "taken_day": 14,
@@ -369,6 +380,20 @@ or
 }
 ```
 
+or
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["latitude", "longitude"],
+      "msg": "Value error, latitude and longitude must both be provided together.",
+      "type": "value_error"
+    }
+  ]
+}
+```
+
 ### `GET /api/v1/{user_id}/photos`
 
 #### Purpose
@@ -406,6 +431,8 @@ Body:
       "category_id": 1,
       "description": "Historic market square in winter.",
       "location_text": "Rynek",
+      "latitude": 50.061947,
+      "longitude": 19.936856,
       "taken_year": 1982,
       "taken_month": 1,
       "taken_day": 14,
@@ -468,6 +495,8 @@ Body:
     "category_id": 1,
     "description": "Historic market square in winter.",
     "location_text": "Rynek",
+    "latitude": 50.061947,
+    "longitude": 19.936856,
     "taken_year": 1982,
     "taken_month": 1,
     "taken_day": 14,
@@ -567,6 +596,8 @@ Content-Type: application/json
   "category_slug": "ulica",
   "description": "Historic market square after renovation.",
   "location_text": "Rynek",
+  "latitude": 50.061947,
+  "longitude": 19.936856,
   "taken_year": 1982,
   "taken_month": 1,
   "taken_day": 14
@@ -578,7 +609,8 @@ Content-Type: application/json
 - this first Sprint 3 edit flow covers metadata only,
 - `description` may be empty in this first version,
 - file replacement is out of scope for this endpoint,
-- the same validation rules used by photo creation apply to category and date fields.
+- the same validation rules used by photo creation apply to category, coordinate, and date fields,
+- sending both `latitude` and `longitude` as `null` clears stored coordinates while keeping `location_text`.
 
 #### Success Response
 
@@ -598,6 +630,8 @@ Body:
     "category_id": 1,
     "description": "Historic market square after renovation.",
     "location_text": "Rynek",
+    "latitude": 50.061947,
+    "longitude": 19.936856,
     "taken_year": 1982,
     "taken_month": 1,
     "taken_day": 14,
@@ -948,6 +982,8 @@ Content-Type: application/json
   "category_slug": "ulica",
   "description": "Corrected historical description.",
   "location_text": "Rynek",
+  "latitude": 50.061947,
+  "longitude": 19.936856,
   "taken_year": 1982,
   "taken_month": 1,
   "taken_day": 14
@@ -972,6 +1008,8 @@ Body:
     "category_id": 1,
     "description": "Corrected historical description.",
     "location_text": "Rynek",
+    "latitude": 50.061947,
+    "longitude": 19.936856,
     "taken_year": 1982,
     "taken_month": 1,
     "taken_day": 14,

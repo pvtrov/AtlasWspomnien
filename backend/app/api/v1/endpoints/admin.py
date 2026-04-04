@@ -113,6 +113,8 @@ def update_photo_metadata(
         category_id=category.id,
         description=payload.description.strip(),
         location_text=payload.location_text.strip(),
+        latitude=payload.latitude,
+        longitude=payload.longitude,
         taken_year=payload.taken_year,
         taken_month=payload.taken_month,
         taken_day=payload.taken_day,

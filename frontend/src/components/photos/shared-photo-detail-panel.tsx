@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import { PhotoLocationEditor } from "@/components/photos/photo-location-editor";
 import { PhotoImage } from "@/components/photos/photo-image";
 import { PHOTO_CATEGORY_OPTIONS } from "@/lib/photo-categories";
 import {
@@ -18,6 +19,8 @@ type EditValues = {
   category_slug: string;
   description: string;
   location_text: string;
+  latitude: string;
+  longitude: string;
   taken_year: string;
   taken_month: string;
   taken_day: string;
@@ -30,9 +33,28 @@ function createEditValues(photo: Photo): EditValues {
     category_slug: photo.category.slug,
     description: photo.description,
     location_text: photo.location_text,
+    latitude: photo.latitude !== null ? String(photo.latitude) : "",
+    longitude: photo.longitude !== null ? String(photo.longitude) : "",
     taken_year: String(photo.taken_year),
     taken_month: photo.taken_month ? String(photo.taken_month) : "",
     taken_day: photo.taken_day ? String(photo.taken_day) : "",
+  };
+}
+
+function buildUpdateCoordinates(values: EditValues): {
+  latitude: number | null;
+  longitude: number | null;
+} {
+  if (!values.latitude.trim() && !values.longitude.trim()) {
+    return {
+      latitude: null,
+      longitude: null,
+    };
+  }
+
+  return {
+    latitude: Number(values.latitude),
+    longitude: Number(values.longitude),
   };
 }
 
@@ -120,6 +142,7 @@ export function SharedPhotoDetailPanel() {
         category_slug: values.category_slug,
         description: values.description.trim(),
         location_text: values.location_text.trim(),
+        ...buildUpdateCoordinates(values),
         taken_year: Number(values.taken_year),
         taken_month: values.taken_month ? Number(values.taken_month) : undefined,
         taken_day: values.taken_day ? Number(values.taken_day) : undefined,
@@ -194,6 +217,14 @@ export function SharedPhotoDetailPanel() {
             <dt>Category</dt>
             <dd>{photo.category.name}</dd>
           </div>
+          {photo.latitude !== null && photo.longitude !== null ? (
+            <div>
+              <dt>Coordinates</dt>
+              <dd>
+                {photo.latitude.toFixed(6)}, {photo.longitude.toFixed(6)}
+              </dd>
+            </div>
+          ) : null}
           <div>
             <dt>Taken date</dt>
             <dd>{formatPhotoDate(photo)}</dd>
@@ -256,16 +287,6 @@ export function SharedPhotoDetailPanel() {
                 </div>
 
                 <div className="auth-field">
-                  <label htmlFor="location_text">Location</label>
-                  <input
-                    id="location_text"
-                    name="location_text"
-                    value={values.location_text}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="auth-field">
                   <label htmlFor="taken_year">Taken year</label>
                   <input
                     id="taken_year"
@@ -298,6 +319,29 @@ export function SharedPhotoDetailPanel() {
                   />
                 </div>
               </div>
+
+              <PhotoLocationEditor
+                locationText={values.location_text}
+                latitudeText={values.latitude}
+                longitudeText={values.longitude}
+                onLocationTextChange={(value) =>
+                  setValues((currentValues) =>
+                    currentValues
+                      ? { ...currentValues, location_text: value }
+                      : currentValues,
+                  )
+                }
+                onLatitudeTextChange={(value) =>
+                  setValues((currentValues) =>
+                    currentValues ? { ...currentValues, latitude: value } : currentValues,
+                  )
+                }
+                onLongitudeTextChange={(value) =>
+                  setValues((currentValues) =>
+                    currentValues ? { ...currentValues, longitude: value } : currentValues,
+                  )
+                }
+              />
 
               <div className="auth-field">
                 <label htmlFor="description">Description</label>
