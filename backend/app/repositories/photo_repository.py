@@ -44,6 +44,22 @@ class PhotoRepository:
         )
         return list(self.db.scalars(statement).unique())
 
+    def list_all(self) -> list[Photo]:
+        statement = (
+            select(Photo)
+            .options(joinedload(Photo.category))
+            .order_by(Photo.created_at.desc(), Photo.id.desc())
+        )
+        return list(self.db.scalars(statement).unique())
+
+    def get_by_id(self, *, photo_id: int) -> Photo | None:
+        statement = (
+            select(Photo)
+            .options(joinedload(Photo.category))
+            .where(Photo.id == photo_id)
+        )
+        return self.db.scalar(statement)
+
     def get_by_id_and_owner(self, *, photo_id: int, owner_id: int) -> Photo | None:
         statement = (
             select(Photo)
