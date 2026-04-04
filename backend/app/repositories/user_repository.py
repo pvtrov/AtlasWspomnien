@@ -20,6 +20,10 @@ class UserRepository:
         statement = select(User).where(User.id == user_id)
         return self.db.scalar(statement)
 
+    def list_all(self) -> list[User]:
+        statement = select(User).order_by(User.created_at.desc(), User.id.desc())
+        return list(self.db.scalars(statement))
+
     def create_creator(
         self,
         *,
@@ -33,6 +37,20 @@ class UserRepository:
             password_hash=password_hash,
             role=UserRole.CREATOR,
         )
+        self.db.add(user)
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
+    def set_blocked_state(self, user: User, *, is_blocked: bool) -> User:
+        user.is_blocked = is_blocked
+        self.db.add(user)
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
+    def set_role(self, user: User, *, role: UserRole) -> User:
+        user.role = role
         self.db.add(user)
         self.db.commit()
         self.db.refresh(user)

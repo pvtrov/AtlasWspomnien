@@ -22,3 +22,11 @@ class UserRead(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserResponse(BaseModel):
+    user: UserRead
+
+
+class UserListResponse(BaseModel):
+    users: list[UserRead]

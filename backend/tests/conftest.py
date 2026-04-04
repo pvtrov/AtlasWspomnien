@@ -9,7 +9,7 @@ from sqlalchemy.pool import StaticPool
 from app.db.base import Base
 from app.dependencies import get_db
 from app.main import app
-from app.models import User  # noqa: F401
+from app.models import Photo, PhotoCategory, User  # noqa: F401
 
 
 @pytest.fixture

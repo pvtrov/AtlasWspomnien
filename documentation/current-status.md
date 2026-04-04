@@ -2,7 +2,7 @@
 
 ## Project State
 
-The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, and Sprint 3 for its currently planned scope covering photo domain, photo organization, backend upload, and creator-facing photo management.
+The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, Sprint 3 for its currently planned scope covering photo domain, photo organization, backend upload, and creator-facing photo management, and the Sprint 4 admin backend moderation scope.
 
 The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
@@ -21,12 +21,17 @@ The repository now includes:
 - frontend login and registration screens connected to backend authentication,
 - minimal frontend authenticated state handling,
 - a frontend creator photo workspace with upload, owned-photo list, detail, edit, and delete flows,
+- administrator-only backend moderation routes for user listing, creator blocking, administrator promotion, photo metadata correction, and photo removal,
+- administrator visibility into shared backend photo listing and detail routes for moderation work,
+- blocked-creator restrictions that still allow login and viewing while preventing new uploads and metadata edits,
+- a backend bootstrap script for creating the first administrator account or promoting an existing user,
 - a backend health endpoint,
 - a protected backend auth route for current-user access,
 - a frontend status page with backend connectivity and auth-state visibility,
-- project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, and current Sprint 3 scope.
+- backend test coverage for the implemented administration and moderation behavior,
+- project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, Sprint 3, and current Sprint 4 backend moderation scope.
 
-The current repository state is ready to move beyond the current Sprint 3 creator upload and management scope into later archive browsing, search, moderation, and refinement work.
+The current repository state is ready to continue Sprint 4 with administrator-facing frontend work and later archive browsing, search, and refinement work.
 
 ## Confirmed Decisions
 
@@ -42,6 +47,7 @@ The current repository state is ready to move beyond the current Sprint 3 creato
 - Current implementation scope for Sprint 1: see [sprint-1.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-1.md)
 - Current implementation scope for Sprint 2: see [sprint-2.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-2.md)
 - Current implementation scope for Sprint 3: see [sprint-3.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-3.md)
+- Current implementation scope for Sprint 4: see [sprint-4.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-4.md)
 
 ## Current Repository Structure
 
@@ -57,7 +63,7 @@ The repository currently contains the main areas agreed for the project:
 
 ## Implemented Foundation So Far
 
-The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, and the currently planned Sprint 3 photo and creator-management scope:
+The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the Sprint 3 photo and creator-management scope, and the Sprint 4 admin backend moderation scope:
 
 ### Backend
 
@@ -70,10 +76,14 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - an authenticated current-user route at `/api/v1/auth/me`,
 - an authenticated creator-only photo upload route at `/api/v1/photos`,
 - authenticated creator-owned photo listing, detail, metadata update, delete, and image retrieval routes under `/api/v1/photos`,
+- administrator visibility into backend photo list, detail, and image access for moderation work,
+- administrator moderation routes under `/api/v1/admin` for user listing, creator blocking, administrator promotion, photo metadata edit, and photo removal,
+- blocked-creator backend rules that allow login and viewing but prevent upload and metadata update actions,
 - local filesystem photo storage handling for uploaded archive materials,
 - backend validation for Sprint 3 photo upload and edit fields, including optional empty descriptions,
 - request-validation and upload-flow logging for easier debugging when creator photo requests fail,
-- backend auth tests alongside the existing health smoke test coverage.
+- a backend bootstrap script for creating the first administrator account or promoting an existing user,
+- backend auth tests alongside health, moderation, and admin bootstrap script coverage.
 
 ### Database
 
@@ -92,7 +102,7 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - explicit stored roles for `creator` and `administrator`,
 - an implicit public `viewer` role for non-authenticated archive access,
 - a unique `username` field as the initial nick or handle representation,
-- a user blocking flag to support later MVP moderation flow,
+- a user blocking flag now used by the implemented MVP moderation flow,
 - backend user and auth schemas for registration, login, and current-user flows.
 
 ### Photo Domain
@@ -145,10 +155,10 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 
 ## Next Recommended Step
 
-The next recommended implementation step is to move into the first post-creator-management product slice now that the Sprint 3 creator upload and management flow is working.
+The next recommended implementation step is to continue Sprint 4 with the administrator-facing frontend moderation flow.
 
 The most natural next product and implementation area is:
 
-- public archive browsing built on top of the now-stable photo domain and creator-management foundation,
-- the first browse/search backend contracts for non-public and later public archive access,
-- follow-up refinement such as stronger frontend validation and broader automated test coverage for the creator photo flow.
+- a basic administrator moderation UI built on the now-documented backend moderation contract,
+- administrator-facing photo listing, metadata editing, removal, and creator-blocking controls,
+- integration of the frontend moderation experience with the implemented admin and photo endpoints.

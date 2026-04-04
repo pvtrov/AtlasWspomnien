@@ -74,6 +74,35 @@ uv run pytest tests/test_health.py
 
 This ensures local backend dependency resolution and test execution use the official PyPI index even when the wider machine environment is configured differently.
 
+## Create The First Administrator Outside Docker
+
+After backend dependencies are available, the backend provides a local bootstrap script for creating the first administrator account or promoting an existing user.
+
+Run:
+
+```bash
+cd backend
+unset UV_INDEX_URL UV_EXTRA_INDEX_URL PIP_INDEX_URL PIP_EXTRA_INDEX_URL
+
+UV_DEFAULT_INDEX=https://pypi.org/simple \
+UV_INDEX=https://pypi.org/simple \
+PIP_INDEX_URL=https://pypi.org/simple \
+uv run python scripts/create_admin.py \
+  --email admin@example.com \
+  --username admin \
+  --password "change-me-now"
+```
+
+Optional flag:
+
+- `--update-password` updates the password when the target user already exists.
+
+The script behavior is:
+
+- if no matching user exists, it creates a new administrator account,
+- if a matching email or username already exists, it promotes that user to administrator,
+- if the matching user is already an administrator, it exits successfully without changing the role unless `--update-password` is used.
+
 ## Database Migration Commands
 
 After backend dependencies are installed, Alembic migrations are applied automatically during Docker-based backend startup.

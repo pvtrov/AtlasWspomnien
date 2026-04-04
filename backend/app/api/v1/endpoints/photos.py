@@ -8,10 +8,11 @@ from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.api.v1.endpoints.auth import CurrentCreator
+from app.api.v1.endpoints.auth import CurrentActiveCreator, CurrentCreator, CurrentPhotoViewer
 from app.core.config import settings
 from app.dependencies import get_db
 from app.models.photo import Photo
+from app.models.user import UserRole
 from app.repositories.photo_category_repository import PhotoCategoryRepository
 from app.repositories.photo_repository import PhotoRepository
 from app.schemas.photo import (
@@ -82,6 +83,32 @@ def get_owned_photo_or_404(
     return photo
 
 
+def get_visible_photo_or_404(
+    *,
+    db: Session,
+    photo_id: int,
+    current_user_id: int,
+    current_user_role: UserRole,
+) -> Photo:
+    repository = PhotoRepository(db)
+
+    if current_user_role == UserRole.ADMINISTRATOR:
+        photo = repository.get_by_id(photo_id=photo_id)
+    else:
+        photo = repository.get_by_id_and_owner(
+            photo_id=photo_id,
+            owner_id=current_user_id,
+        )
+
+    if photo is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Photo not found.",
+        )
+
+    return photo
+
+
 @router.post(
     "",
     response_model=PhotoCreateResponse,
@@ -90,7 +117,7 @@ def get_owned_photo_or_404(
 def upload_photo(
     payload: Annotated[PhotoCreate, Depends(parse_photo_create)],
     file: Annotated[UploadFile, File()],
-    current_user: CurrentCreator,
+    current_user: CurrentActiveCreator,
     db: DbSession,
 ) -> PhotoCreateResponse:
     if not file.filename:
@@ -171,23 +198,28 @@ def upload_photo(
 
 @router.get("", response_model=PhotoListResponse)
 def list_creator_photos(
-    current_user: CurrentCreator,
+    current_user: CurrentPhotoViewer,
     db: DbSession,
 ) -> PhotoListResponse:
-    photos = PhotoRepository(db).list_by_owner(owner_id=current_user.id)
+    repository = PhotoRepository(db)
+    if current_user.role == UserRole.ADMINISTRATOR:
+        photos = repository.list_all()
+    else:
+        photos = repository.list_by_owner(owner_id=current_user.id)
     return PhotoListResponse(photos=photos)
 
 
 @router.get("/{photo_id}", response_model=PhotoResponse)
 def get_creator_photo(
     photo_id: int,
-    current_user: CurrentCreator,
+    current_user: CurrentPhotoViewer,
     db: DbSession,
 ) -> PhotoResponse:
-    photo = get_owned_photo_or_404(
+    photo = get_visible_photo_or_404(
         db=db,
         photo_id=photo_id,
-        owner_id=current_user.id,
+        current_user_id=current_user.id,
+        current_user_role=current_user.role,
     )
     return PhotoResponse(photo=photo)
 
@@ -195,13 +227,14 @@ def get_creator_photo(
 @router.get("/{photo_id}/image")
 def get_creator_photo_image(
     photo_id: int,
-    current_user: CurrentCreator,
+    current_user: CurrentPhotoViewer,
     db: DbSession,
 ) -> FileResponse:
-    photo = get_owned_photo_or_404(
+    photo = get_visible_photo_or_404(
         db=db,
         photo_id=photo_id,
-        owner_id=current_user.id,
+        current_user_id=current_user.id,
+        current_user_role=current_user.role,
     )
 
     if not photo.file_reference:
@@ -227,7 +260,7 @@ def get_creator_photo_image(
 def update_creator_photo(
     photo_id: int,
     payload: PhotoUpdate,
-    current_user: CurrentCreator,
+    current_user: CurrentActiveCreator,
     db: DbSession,
 ) -> PhotoResponse:
     photo = get_owned_photo_or_404(

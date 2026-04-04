@@ -109,6 +109,7 @@ Authenticate an existing user and return the minimal authentication payload requ
 
 - the backend verifies the provided credentials,
 - the backend returns a minimal authentication token payload,
+- blocked users may still authenticate so they can access non-mutation areas of the application that remain available to them,
 - the exact token implementation may be refined later, but the response contract should remain simple and frontend-friendly.
 
 #### Success Response
@@ -153,19 +154,9 @@ Body:
 }
 ```
 
-`403 Forbidden`
-
-```json
-{
-  "detail": "User account is blocked."
-}
-```
-
 # Photo Management
 
-This section defines the Sprint 3 backend upload contract for creator-owned photo materials.
-
-The current scope is limited to authenticated creator upload with local filesystem storage and database-backed metadata plus file reference persistence.
+This section defines the creator-facing photo contract together with the Sprint 4 rule that administrators may also view photo records and blocked creators may still view and delete their own records.
 
 ## Non-Public Endpoints
 
@@ -179,7 +170,9 @@ Upload one photo for the currently authenticated creator and persist both its me
 
 This endpoint requires a bearer access token for an authenticated user.
 
-Only users with the `creator` role may upload photos through this Sprint 3 endpoint.
+Only users with the `creator` role may upload photos through this endpoint.
+
+Blocked creators cannot upload photos.
 
 #### Request Headers
 
@@ -304,7 +297,7 @@ or
 
 ```json
 {
-  "detail": "User account is blocked."
+  "detail": "Blocked creators cannot upload or edit photos."
 }
 ```
 
@@ -326,11 +319,14 @@ or
 
 #### Purpose
 
-Return the list of photos owned by the currently authenticated creator.
+Return photos visible to the currently authenticated user.
 
 #### Authentication
 
-This endpoint requires a bearer access token for an authenticated creator.
+This endpoint requires a bearer access token for an authenticated creator or administrator.
+
+- creators receive only their own photos,
+- administrators receive all photos.
 
 #### Request Headers
 
@@ -387,7 +383,7 @@ Body:
 
 ```json
 {
-  "detail": "Only creators can manage photos."
+  "detail": "Only creators and administrators can access photos."
 }
 ```
 
@@ -395,11 +391,14 @@ Body:
 
 #### Purpose
 
-Return one photo owned by the currently authenticated creator.
+Return one photo visible to the currently authenticated creator or administrator.
 
 #### Authentication
 
-This endpoint requires a bearer access token for an authenticated creator.
+This endpoint requires a bearer access token for an authenticated creator or administrator.
+
+- creators may access only their own photos,
+- administrators may access any photo.
 
 #### Request Headers
 
@@ -454,7 +453,7 @@ Body:
 
 ```json
 {
-  "detail": "Only creators can manage photos."
+  "detail": "Only creators and administrators can access photos."
 }
 ```
 
@@ -470,11 +469,11 @@ Body:
 
 #### Purpose
 
-Return the binary image file for one photo owned by the currently authenticated creator.
+Return the binary image file for one photo visible to the currently authenticated creator or administrator.
 
 #### Authentication
 
-This endpoint requires a bearer access token for an authenticated creator.
+This endpoint requires a bearer access token for an authenticated creator or administrator.
 
 #### Request Headers
 
@@ -508,7 +507,7 @@ Body:
 
 ```json
 {
-  "detail": "Only creators can manage photos."
+  "detail": "Only creators and administrators can access photos."
 }
 ```
 
@@ -537,6 +536,8 @@ Update metadata for one photo owned by the currently authenticated creator.
 #### Authentication
 
 This endpoint requires a bearer access token for an authenticated creator.
+
+Blocked creators cannot edit photo metadata through this endpoint.
 
 #### Request Headers
 
@@ -624,6 +625,14 @@ Body:
 }
 ```
 
+or
+
+```json
+{
+  "detail": "Blocked creators cannot upload or edit photos."
+}
+```
+
 `404 Not Found`
 
 ```json
@@ -655,6 +664,8 @@ Delete one photo owned by the currently authenticated creator.
 #### Authentication
 
 This endpoint requires a bearer access token for an authenticated creator.
+
+Blocked creators may still delete their own photos through this endpoint.
 
 #### Request Headers
 
@@ -689,6 +700,424 @@ Status:
 ```
 
 `404 Not Found`
+
+```json
+{
+  "detail": "Photo not found."
+}
+```
+
+## Administration
+
+This section defines the Sprint 4 administrator moderation contract.
+
+All administration endpoints require an authenticated user with the `administrator` role.
+
+### `GET /api/v1/admin/users`
+
+#### Purpose
+
+Return the list of users for moderation work.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+```json
+{
+  "users": [
+    {
+      "id": 2,
+      "email": "creator@example.com",
+      "username": "creator_name",
+      "role": "creator",
+      "is_blocked": false,
+      "created_at": "2026-04-04T10:00:00Z",
+      "updated_at": "2026-04-04T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### Error Responses
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only administrators can access moderation routes."
+}
+```
+
+### `PATCH /api/v1/admin/users/{user_id}/block`
+
+#### Purpose
+
+Block one creator from future upload and metadata-edit actions.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+```json
+{
+  "user": {
+    "id": 2,
+    "email": "creator@example.com",
+    "username": "creator_name",
+    "role": "creator",
+    "is_blocked": true,
+    "created_at": "2026-04-04T10:00:00Z",
+    "updated_at": "2026-04-04T12:00:00Z"
+  }
+}
+```
+
+#### Response Notes
+
+- blocking does not prevent login,
+- a blocked creator may still view the authenticated parts of the application that remain available to them,
+- a blocked creator cannot upload new photos,
+- a blocked creator cannot edit their existing photo metadata,
+- a blocked creator may still delete their own previously uploaded photos.
+
+#### Error Responses
+
+`400 Bad Request`
+
+```json
+{
+  "detail": "Only creators can be blocked."
+}
+```
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only administrators can access moderation routes."
+}
+```
+
+`404 Not Found`
+
+```json
+{
+  "detail": "User not found."
+}
+```
+
+### `PATCH /api/v1/admin/users/{user_id}/promote`
+
+#### Purpose
+
+Promote one existing user to the `administrator` role.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+```json
+{
+  "user": {
+    "id": 2,
+    "email": "creator@example.com",
+    "username": "creator_name",
+    "role": "administrator",
+    "is_blocked": false,
+    "created_at": "2026-04-04T10:00:00Z",
+    "updated_at": "2026-04-04T12:10:00Z"
+  }
+}
+```
+
+#### Response Notes
+
+- the endpoint is idempotent for users who are already administrators,
+- this endpoint keeps the existing role model and does not introduce additional permission tiers.
+
+#### Error Responses
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only administrators can access moderation routes."
+}
+```
+
+`404 Not Found`
+
+```json
+{
+  "detail": "User not found."
+}
+```
+
+### `PATCH /api/v1/admin/photos/{photo_id}`
+
+#### Purpose
+
+Allow an administrator to edit metadata for any photo.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+#### Request Body
+
+```json
+{
+  "category_slug": "ulica",
+  "description": "Corrected historical description.",
+  "location_text": "Rynek",
+  "taken_year": 1982,
+  "taken_month": 1,
+  "taken_day": 14
+}
+```
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+```json
+{
+  "photo": {
+    "id": 1,
+    "owner_id": 2,
+    "category_id": 1,
+    "description": "Corrected historical description.",
+    "location_text": "Rynek",
+    "taken_year": 1982,
+    "taken_month": 1,
+    "taken_day": 14,
+    "category": {
+      "id": 1,
+      "slug": "ulica",
+      "name": "Ulica",
+      "parent_id": null
+    },
+    "created_at": "2026-04-04T10:00:00Z",
+    "updated_at": "2026-04-04T12:15:00Z"
+  }
+}
+```
+
+#### Error Responses
+
+`400 Bad Request`
+
+```json
+{
+  "detail": "Unknown photo category."
+}
+```
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only administrators can access moderation routes."
+}
+```
+
+`404 Not Found`
+
+```json
+{
+  "detail": "Photo not found."
+}
+```
+
+`422 Unprocessable Entity`
+
+```json
+{
+  "detail": [
+    {
+      "loc": ["taken_day"],
+      "msg": "Value error, taken_day requires taken_month.",
+      "type": "value_error"
+    }
+  ]
+}
+```
+
+### `DELETE /api/v1/admin/photos/{photo_id}`
+
+#### Purpose
+
+Allow an administrator to remove any photo.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Success Response
+
+Status:
+
+```text
+204 No Content
+```
+
+#### Error Responses
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only administrators can access moderation routes."
+}
+```
+
+`404 Not Found`
+
+```json
+{
+  "detail": "Photo not found."
+}
+```
+
+### `GET /api/v1/admin/photos/{photo_id}/image`
+
+#### Purpose
+
+Return the binary image file for any photo during moderation work.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+- binary image content with the detected media type.
+
+#### Error Responses
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only administrators can access moderation routes."
+}
+```
+
+`404 Not Found`
+
+```json
+{
+  "detail": "Photo file not found."
+}
+```
+
+or
 
 ```json
 {
@@ -744,10 +1173,30 @@ Body:
 }
 ```
 
-`403 Forbidden`
+## Admin Bootstrap Script
 
-```json
-{
-  "detail": "User account is blocked."
-}
+The backend also provides a local script for creating the first administrator account or promoting an existing user.
+
+Run from [backend](/Users/apatro/Repos/priv/PW/AITSI/backend):
+
+```bash
+unset UV_INDEX_URL UV_EXTRA_INDEX_URL PIP_INDEX_URL PIP_EXTRA_INDEX_URL
+
+UV_DEFAULT_INDEX=https://pypi.org/simple \
+UV_INDEX=https://pypi.org/simple \
+PIP_INDEX_URL=https://pypi.org/simple \
+uv run python scripts/create_admin.py \
+  --email admin@example.com \
+  --username admin \
+  --password "change-me-now"
 ```
+
+Optional flag:
+
+- `--update-password` updates the password when the target user already exists.
+
+Behavior:
+
+- if no matching user exists, the script creates a new administrator account,
+- if a matching email or username already exists, the script promotes that user to administrator,
+- if the matching user is already an administrator, the script completes successfully without changing the role.

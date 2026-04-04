@@ -58,12 +58,6 @@ def get_current_user(
             detail="Not authenticated.",
         )
 
-    if user.is_blocked:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is blocked.",
-        )
-
     return user
 
 
@@ -81,6 +75,45 @@ def require_creator(current_user: CurrentUser) -> User:
 
 
 CurrentCreator = Annotated[User, Depends(require_creator)]
+
+
+def require_active_creator(current_user: CurrentCreator) -> User:
+    if current_user.is_blocked:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Blocked creators cannot upload or edit photos.",
+        )
+
+    return current_user
+
+
+CurrentActiveCreator = Annotated[User, Depends(require_active_creator)]
+
+
+def require_photo_viewer(current_user: CurrentUser) -> User:
+    if current_user.role not in {UserRole.CREATOR, UserRole.ADMINISTRATOR}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only creators and administrators can access photos.",
+        )
+
+    return current_user
+
+
+CurrentPhotoViewer = Annotated[User, Depends(require_photo_viewer)]
+
+
+def require_administrator(current_user: CurrentUser) -> User:
+    if current_user.role != UserRole.ADMINISTRATOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only administrators can access moderation routes.",
+        )
+
+    return current_user
+
+
+CurrentAdministrator = Annotated[User, Depends(require_administrator)]
 
 
 @router.post(
@@ -121,12 +154,6 @@ def login(payload: LoginRequest, db: DbSession) -> LoginResponse:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials.",
-        )
-
-    if user.is_blocked:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is blocked.",
         )
 
     access_token = create_access_token(subject=str(user.id))
