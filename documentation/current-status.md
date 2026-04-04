@@ -2,7 +2,7 @@
 
 ## Project State
 
-The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, the first Sprint 3 photo domain foundation slice, the Sprint 3 photo organization foundation slice, the Sprint 3 backend photo upload slice, and the first Sprint 3 frontend creator photo management slice.
+The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, and Sprint 3 for its currently planned scope covering photo domain, photo organization, backend upload, and creator-facing photo management.
 
 The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
@@ -26,7 +26,7 @@ The repository now includes:
 - a frontend status page with backend connectivity and auth-state visibility,
 - project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, and current Sprint 3 scope.
 
-The current repository state is ready to move beyond the initial Sprint 3 creator upload and management slice into later archive browsing, search, moderation, and refinement work.
+The current repository state is ready to move beyond the current Sprint 3 creator upload and management scope into later archive browsing, search, moderation, and refinement work.
 
 ## Confirmed Decisions
 
@@ -53,11 +53,11 @@ The repository currently contains the main areas agreed for the project:
 - `infra/` for infrastructure-related files,
 - `scripts/` for helper scripts,
 - `tests/` for top-level cross-system tests,
-- `Requirements/` for source requirements and original project input.
+- `requirements/` for source requirements and original project input.
 
 ## Implemented Foundation So Far
 
-The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the first Sprint 3 photo domain foundation slice, the Sprint 3 photo organization foundation slice, the Sprint 3 backend photo upload slice, and the first Sprint 3 creator photo management slice:
+The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, and the currently planned Sprint 3 photo and creator-management scope:
 
 ### Backend
 

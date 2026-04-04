@@ -97,6 +97,17 @@ The current architectural direction is:
 - photo metadata and file reference information are stored in PostgreSQL,
 - `documentation/` stores project-facing knowledge and technical decisions.
 
+## Implemented Application Foundation
+
+The repository currently includes:
+
+- a working authentication foundation with persisted users, password hashing, login, registration, and JWT-based API access,
+- a persisted photo domain with creator ownership and first-version metadata fields,
+- a minimal photo organization foundation based on one primary category per photo,
+- local filesystem storage for uploaded photo files,
+- creator-owned photo upload and management flows across backend and frontend,
+- documented API contracts for authentication and creator photo management.
+
 ## Container Responsibilities
 
 The planned local container responsibilities are:

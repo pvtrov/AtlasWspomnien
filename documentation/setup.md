@@ -96,14 +96,17 @@ This uses the backend environment configuration and the `DATABASE_URL` value to 
 
 ## Current Development State
 
-At this stage, Docker is the primary local development environment for the implemented Sprint 1 foundation.
+At this stage, Docker is the primary local development environment for the implemented Sprint 1 foundation, Sprint 2 authentication foundation, and the current Sprint 3 creator photo flow.
 
 That means:
 
 - PostgreSQL is ready to run immediately,
 - the backend FastAPI scaffold is implemented,
 - the frontend Next.js scaffold is implemented,
-- the frontend can perform a simple backend health-check request,
+- the backend authentication foundation is implemented,
+- the frontend can authenticate against the backend auth flow,
+- the backend photo domain, photo organization, and local photo storage flow are implemented,
+- the frontend creator photo workspace supports upload, list, detail, edit, and delete flows for creator-owned materials,
 - the same Docker setup is intended to remain the main development workflow as the project grows.
 
 ## Intended Workflow
