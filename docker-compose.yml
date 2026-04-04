@@ -15,6 +15,7 @@ services:
       PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
     volumes:
       - ./backend:/app
+      - ./backend/storage:/app/storage
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     depends_on:

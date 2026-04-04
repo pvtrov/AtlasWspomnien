@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.models.user import User
+from app.models.user import UserRole
 from app.repositories.user_repository import UserRepository
 from app.schemas.auth import (
     CurrentUserResponse,
@@ -67,6 +68,19 @@ def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def require_creator(current_user: CurrentUser) -> User:
+    if current_user.role != UserRole.CREATOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only creators can upload photos.",
+        )
+
+    return current_user
+
+
+CurrentCreator = Annotated[User, Depends(require_creator)]
 
 
 @router.post(

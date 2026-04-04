@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,6 +13,7 @@ class Settings(BaseSettings):
     cors_allow_origins: list[str] = ["http://localhost:3000"]
     auth_secret_key: str = "change-me-for-production"
     auth_access_token_expire_minutes: int = 60
+    photo_storage_dir: Path = Path("/app/storage/photos")
 
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),

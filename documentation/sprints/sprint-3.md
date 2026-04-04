@@ -145,6 +145,18 @@ Enable authenticated creators to upload a photo and persist both its metadata an
 - Keep the storage implementation simple and local-first.
 - Do not introduce S3-compatible storage in this sprint.
 
+#### Implementation Status
+
+Implemented in the `feature/backend-photo-upload` task slice:
+
+- added an authenticated backend upload endpoint for creator-owned photo materials,
+- required creator authentication and rejected non-creator upload access,
+- stored uploaded files on local filesystem storage in line with the accepted storage strategy,
+- persisted photo metadata together with a database file reference,
+- resolved and validated the primary category through the seeded photo category structure,
+- validated the required Sprint 3 upload fields for the single-photo upload flow,
+- documented the upload request and response contract for the next frontend work.
+
 ### 4. Frontend Photo Upload Form
 
 #### Goal

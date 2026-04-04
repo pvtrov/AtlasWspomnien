@@ -24,6 +24,7 @@ Example:
 
 ```bash
 CORS_ALLOW_ORIGINS=["http://localhost:3000"]
+PHOTO_STORAGE_DIR=/app/storage/photos
 ```
 
 For backend package installation, the project environment may also define Python package index settings such as `UV_DEFAULT_INDEX`, `UV_INDEX`, and `PIP_INDEX_URL`.
@@ -43,6 +44,8 @@ This starts:
 - the backend container,
 - the frontend container,
 - the PostgreSQL database container.
+
+The backend container also mounts `./backend/storage` to `/app/storage` so Sprint 3 uploaded photo files are kept on local filesystem storage outside PostgreSQL.
 
 During backend startup, the backend container applies `alembic upgrade head` automatically before starting the FastAPI development server.
 
@@ -110,6 +113,7 @@ The project is being structured so that:
 - backend development happens inside the backend container,
 - frontend development happens inside the frontend container,
 - database state is stored in a Docker volume,
+- uploaded photo files are stored in the local `backend/storage/` directory mounted into the backend container,
 - application source code remains in the repository and is mounted into containers during development.
 
 ## Planned Next Evolution
