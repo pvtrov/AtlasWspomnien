@@ -2,7 +2,7 @@
 
 ## Project State
 
-The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, and the first Sprint 3 photo domain foundation slice.
+The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, the first Sprint 3 photo domain foundation slice, and the Sprint 3 photo organization foundation slice.
 
 The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
@@ -13,6 +13,7 @@ The repository now includes:
 - PostgreSQL database foundation and migration scaffolding,
 - a persisted user domain model with role representation,
 - a persisted photo domain foundation with creator ownership and first-version metadata fields,
+- a persisted photo organization foundation with primary category linkage and future-ready parent-child support,
 - backend creator registration and login endpoints,
 - password hashing and JWT-based authentication foundation,
 - frontend login and registration screens connected to backend authentication,
@@ -22,7 +23,7 @@ The repository now includes:
 - a frontend status page with backend connectivity and auth-state visibility,
 - project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, and current Sprint 3 scope.
 
-The current repository state is ready to move from authentication foundation work into the next Sprint 3 product slices that build on the new photo domain foundation.
+The current repository state is ready to continue deeper into the remaining Sprint 3 product slices that build on the new photo domain and photo organization foundations.
 
 ## Confirmed Decisions
 
@@ -53,7 +54,7 @@ The repository currently contains the main areas agreed for the project:
 
 ## Implemented Foundation So Far
 
-The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, and the first Sprint 3 photo domain foundation slice:
+The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the first Sprint 3 photo domain foundation slice, and the Sprint 3 photo organization foundation slice:
 
 ### Backend
 
@@ -95,6 +96,15 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - backend photo schemas for creation and read operations,
 - database indexes that support creator ownership and later date/location filtering work.
 
+### Photo Organization
+
+- an initial persisted `PhotoCategory` model,
+- a required primary category relationship from each photo through `category_id`,
+- optional `parent_id` support on categories so the structure can grow into parent-child hierarchy later,
+- seeded MVP starter categories: `ulica`, `budynek`, and `park`,
+- category kept separate from `location_text` and historical date metadata,
+- backend photo schemas extended to carry category input and read data without adding hierarchy management behavior.
+
 ### Frontend
 
 - Next.js application foundation with root layout and a simple status page,
@@ -121,11 +131,10 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 
 ## Next Recommended Step
 
-The next recommended implementation step is to continue deeper into Sprint 3 beyond the photo domain foundation.
+The next recommended implementation step is to continue deeper into Sprint 3 beyond the photo domain foundation and photo organization foundation.
 
 The most natural next product and implementation area is:
 
-- category or hierarchy foundation,
 - photo upload and file-reference persistence flows,
 - authenticated creator-facing views built on top of the current auth foundation,
 - additional protected backend routes tied to the next business slice.
