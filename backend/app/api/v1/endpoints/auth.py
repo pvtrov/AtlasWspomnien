@@ -64,21 +64,21 @@ def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-def require_creator(current_user: CurrentUser) -> User:
-    if current_user.role != UserRole.CREATOR:
+def require_photo_manager(current_user: CurrentUser) -> User:
+    if current_user.role not in {UserRole.CREATOR, UserRole.ADMINISTRATOR}:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only creators can manage photos.",
+            detail="Only creators and administrators can manage photos.",
         )
 
     return current_user
 
 
-CurrentCreator = Annotated[User, Depends(require_creator)]
+CurrentPhotoManager = Annotated[User, Depends(require_photo_manager)]
 
 
-def require_active_creator(current_user: CurrentCreator) -> User:
-    if current_user.is_blocked:
+def require_active_photo_manager(current_user: CurrentPhotoManager) -> User:
+    if current_user.role == UserRole.CREATOR and current_user.is_blocked:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Blocked creators cannot upload or edit photos.",
@@ -87,7 +87,7 @@ def require_active_creator(current_user: CurrentCreator) -> User:
     return current_user
 
 
-CurrentActiveCreator = Annotated[User, Depends(require_active_creator)]
+CurrentActivePhotoManager = Annotated[User, Depends(require_active_photo_manager)]
 
 
 def require_photo_viewer(current_user: CurrentUser) -> User:

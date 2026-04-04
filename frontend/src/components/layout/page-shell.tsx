@@ -17,6 +17,7 @@ export function PageShell({ children }: PageShellProps) {
           <nav className="top-nav" aria-label="Primary">
             <Link href="/">Home</Link>
             <Link href="/photos">My photos</Link>
+            <Link href="/admin">Admin</Link>
             <Link href="/login">Login</Link>
             <Link href="/register">Register</Link>
           </nav>

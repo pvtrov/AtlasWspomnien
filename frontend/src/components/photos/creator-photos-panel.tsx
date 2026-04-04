@@ -7,7 +7,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { PHOTO_CATEGORY_OPTIONS } from "@/lib/photo-categories";
 import {
   type Photo,
-  listCreatorPhotos,
+  listOwnedPhotos,
   uploadPhoto,
 } from "@/services/api-client";
 import { PhotoImage } from "@/components/photos/photo-image";
@@ -67,14 +67,14 @@ export function CreatorPhotosPanel() {
 
   useEffect(() => {
     async function loadPhotos(): Promise<void> {
-      if (!token || status !== "authenticated") {
+      if (!token || status !== "authenticated" || !currentUser) {
         return;
       }
 
       setIsLoading(true);
 
       try {
-        const response = await listCreatorPhotos(token);
+        const response = await listOwnedPhotos(token, currentUser.id);
         setPhotos(response);
         setLoadMessage(
           response.length > 0
@@ -93,7 +93,7 @@ export function CreatorPhotosPanel() {
     }
 
     void loadPhotos();
-  }, [status, token]);
+  }, [currentUser, status, token]);
 
   function handleFieldChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,

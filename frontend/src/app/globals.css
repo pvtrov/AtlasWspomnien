@@ -291,7 +291,8 @@ a {
 }
 
 .photo-workspace,
-.photo-detail-layout {
+.photo-detail-layout,
+.admin-workspace {
   display: grid;
   gap: 1.5rem;
   align-items: start;
@@ -364,6 +365,19 @@ a {
   border: 1px solid var(--color-border);
   border-radius: 1.2rem;
   background: rgba(255, 255, 255, 0.7);
+}
+
+.photo-card--button {
+  width: 100%;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.photo-card--selected {
+  border-color: rgba(123, 67, 24, 0.45);
+  box-shadow: 0 0 0 0.15rem rgba(143, 79, 29, 0.12);
 }
 
 .photo-card__image,
@@ -451,6 +465,84 @@ a {
   opacity: 0.72;
 }
 
+.button--secondary {
+  background: rgba(143, 79, 29, 0.14);
+  color: var(--color-accent-strong);
+}
+
+.button--secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.admin-users-panel {
+  grid-column: 1 / -1;
+}
+
+.admin-user-list {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.admin-user-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.admin-user-card--button {
+  width: 100%;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-user-card--selected {
+  border-color: rgba(123, 67, 24, 0.45);
+  box-shadow: 0 0 0 0.15rem rgba(143, 79, 29, 0.12);
+}
+
+.admin-user-card p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.admin-user-card__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-user-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(31, 122, 77, 0.12);
+  color: #1f7a4d;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.admin-user-badge--blocked {
+  background: rgba(180, 73, 61, 0.12);
+  color: #b4493d;
+}
+
 .status-card__actions {
   display: flex;
   flex-wrap: wrap;
@@ -510,7 +602,8 @@ a {
   }
 
   .photo-workspace,
-  .photo-detail-layout {
+  .photo-detail-layout,
+  .admin-workspace {
     grid-template-columns: 1fr;
   }
 }

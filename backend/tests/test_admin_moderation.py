@@ -254,6 +254,23 @@ def test_admin_can_block_creator(client, db_session: Session) -> None:
     assert refreshed_user.is_blocked is True
 
 
+def test_admin_cannot_block_own_account(client, db_session: Session) -> None:
+    admin = create_user(
+        db_session,
+        email="admin@example.com",
+        username="admin",
+        role=UserRole.ADMINISTRATOR,
+    )
+    headers = login_headers(client, email="admin@example.com")
+
+    response = client.patch(f"/api/v1/admin/users/{admin.id}/block", headers=headers)
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "detail": "You cannot block your own account.",
+    }
+
+
 def test_admin_can_promote_creator(client, db_session: Session) -> None:
     create_user(
         db_session,
@@ -298,9 +315,9 @@ def test_non_admin_cannot_access_admin_user_listing(client, db_session: Session)
     }
 
 
-def test_admin_can_list_all_photos_via_shared_route(client, db_session: Session) -> None:
+def test_admin_can_list_only_own_photos_via_owned_route(client, db_session: Session) -> None:
     category = create_category(db_session)
-    create_user(
+    admin = create_user(
         db_session,
         email="admin@example.com",
         username="admin",
@@ -319,13 +336,39 @@ def test_admin_can_list_all_photos_via_shared_route(client, db_session: Session)
     )
     headers = login_headers(client, email="admin@example.com")
 
-    response = client.get("/api/v1/photos", headers=headers)
+    response = client.get(f"/api/v1/{admin.id}/photos", headers=headers)
 
     assert response.status_code == 200
-    photos = response.json()["photos"]
-    assert len(photos) == 1
-    assert photos[0]["id"] == photo.id
-    assert photos[0]["owner_id"] == creator.id
+    assert response.json()["photos"] == []
+
+
+def test_admin_cannot_list_another_users_owned_photos(client, db_session: Session) -> None:
+    category = create_category(db_session)
+    admin = create_user(
+        db_session,
+        email="admin@example.com",
+        username="admin",
+        role=UserRole.ADMINISTRATOR,
+    )
+    creator = create_user(
+        db_session,
+        email="creator@example.com",
+        username="creator-one",
+        role=UserRole.CREATOR,
+    )
+    create_photo(
+        db_session,
+        owner_id=creator.id,
+        category_id=category.id,
+    )
+    headers = login_headers(client, email="admin@example.com")
+
+    response = client.get(f"/api/v1/{creator.id}/photos", headers=headers)
+
+    assert response.status_code == 403
+    assert response.json() == {
+        "detail": "You can only access your own photos.",
+    }
 
 
 def test_admin_can_read_edit_and_delete_other_creator_photo(
@@ -381,3 +424,32 @@ def test_admin_can_read_edit_and_delete_other_creator_photo(
 
     assert delete_response.status_code == 204
     assert db_session.scalar(select(Photo).where(Photo.id == photo.id)) is None
+
+
+def test_admin_can_upload_own_photo(client, db_session: Session, monkeypatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(settings, "photo_storage_dir", tmp_path)
+    create_category(db_session)
+    create_user(
+        db_session,
+        email="admin@example.com",
+        username="admin",
+        role=UserRole.ADMINISTRATOR,
+    )
+    headers = login_headers(client, email="admin@example.com")
+
+    response = client.post(
+        "/api/v1/photos",
+        headers=headers,
+        files={"file": ("photo.jpg", b"fake-image", "image/jpeg")},
+        data={
+          "category_slug": "ulica",
+          "description": "Admin upload",
+          "location_text": "Rynek",
+          "taken_year": "1982",
+          "taken_month": "1",
+          "taken_day": "14",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["photo"]["owner_id"] == 1

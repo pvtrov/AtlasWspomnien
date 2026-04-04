@@ -8,7 +8,11 @@ from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.api.v1.endpoints.auth import CurrentActiveCreator, CurrentCreator, CurrentPhotoViewer
+from app.api.v1.endpoints.auth import (
+    CurrentActivePhotoManager,
+    CurrentPhotoManager,
+    CurrentPhotoViewer,
+)
 from app.core.config import settings
 from app.dependencies import get_db
 from app.models.photo import Photo
@@ -26,6 +30,7 @@ from app.services.photo_storage import PhotoStorageService
 
 
 router = APIRouter()
+owned_photos_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 DbSession = Annotated[Session, Depends(get_db)]
@@ -117,7 +122,7 @@ def get_visible_photo_or_404(
 def upload_photo(
     payload: Annotated[PhotoCreate, Depends(parse_photo_create)],
     file: Annotated[UploadFile, File()],
-    current_user: CurrentActiveCreator,
+    current_user: CurrentActivePhotoManager,
     db: DbSession,
 ) -> PhotoCreateResponse:
     if not file.filename:
@@ -196,17 +201,72 @@ def upload_photo(
     return PhotoCreateResponse(photo=photo)
 
 
-@router.get("", response_model=PhotoListResponse)
-def list_creator_photos(
+@owned_photos_router.get("/{user_id}/photos", response_model=PhotoListResponse)
+def list_owned_photos(
+    user_id: int,
     current_user: CurrentPhotoViewer,
     db: DbSession,
 ) -> PhotoListResponse:
-    repository = PhotoRepository(db)
-    if current_user.role == UserRole.ADMINISTRATOR:
-        photos = repository.list_all()
-    else:
-        photos = repository.list_by_owner(owner_id=current_user.id)
+    if current_user.id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only access your own photos.",
+        )
+
+    photos = PhotoRepository(db).list_by_owner(owner_id=current_user.id)
     return PhotoListResponse(photos=photos)
+
+
+@router.patch("/{photo_id}", response_model=PhotoResponse)
+def update_creator_photo(
+    photo_id: int,
+    payload: PhotoUpdate,
+    current_user: CurrentActivePhotoManager,
+    db: DbSession,
+) -> PhotoResponse:
+    photo = get_owned_photo_or_404(
+        db=db,
+        photo_id=photo_id,
+        owner_id=current_user.id,
+    )
+
+    category = PhotoCategoryRepository(db).get_by_slug(payload.category_slug.strip())
+    if category is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unknown photo category.",
+        )
+
+    updated_photo = PhotoRepository(db).update_metadata(
+        photo,
+        category_id=category.id,
+        description=payload.description.strip(),
+        location_text=payload.location_text.strip(),
+        taken_year=payload.taken_year,
+        taken_month=payload.taken_month,
+        taken_day=payload.taken_day,
+    )
+    updated_photo.category = category
+    return PhotoResponse(photo=updated_photo)
+
+
+@router.delete("/{photo_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_creator_photo(
+    photo_id: int,
+    current_user: CurrentPhotoManager,
+    db: DbSession,
+) -> None:
+    photo = get_owned_photo_or_404(
+        db=db,
+        photo_id=photo_id,
+        owner_id=current_user.id,
+    )
+    file_reference = photo.file_reference
+
+    PhotoRepository(db).delete(photo)
+
+    if file_reference:
+        PhotoStorageService(settings.photo_storage_dir).delete_photo(file_reference)
 
 
 @router.get("/{photo_id}", response_model=PhotoResponse)
@@ -254,55 +314,3 @@ def get_creator_photo_image(
 
     media_type = mimetypes.guess_type(photo_path.name)[0] or "application/octet-stream"
     return FileResponse(photo_path, media_type=media_type)
-
-
-@router.patch("/{photo_id}", response_model=PhotoResponse)
-def update_creator_photo(
-    photo_id: int,
-    payload: PhotoUpdate,
-    current_user: CurrentActiveCreator,
-    db: DbSession,
-) -> PhotoResponse:
-    photo = get_owned_photo_or_404(
-        db=db,
-        photo_id=photo_id,
-        owner_id=current_user.id,
-    )
-
-    category = PhotoCategoryRepository(db).get_by_slug(payload.category_slug.strip())
-    if category is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Unknown photo category.",
-        )
-
-    updated_photo = PhotoRepository(db).update_metadata(
-        photo,
-        category_id=category.id,
-        description=payload.description.strip(),
-        location_text=payload.location_text.strip(),
-        taken_year=payload.taken_year,
-        taken_month=payload.taken_month,
-        taken_day=payload.taken_day,
-    )
-    updated_photo.category = category
-    return PhotoResponse(photo=updated_photo)
-
-
-@router.delete("/{photo_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_creator_photo(
-    photo_id: int,
-    current_user: CurrentCreator,
-    db: DbSession,
-) -> None:
-    photo = get_owned_photo_or_404(
-        db=db,
-        photo_id=photo_id,
-        owner_id=current_user.id,
-    )
-    file_reference = photo.file_reference
-
-    PhotoRepository(db).delete(photo)
-
-    if file_reference:
-        PhotoStorageService(settings.photo_storage_dir).delete_photo(file_reference)
