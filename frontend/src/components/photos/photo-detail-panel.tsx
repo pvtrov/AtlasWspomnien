@@ -5,6 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import {
+  createPartialDateValue,
+  PartialDateInput,
+} from "@/components/photos/partial-date-input";
 import { PhotoLocationEditor } from "@/components/photos/photo-location-editor";
 import { PhotoImage } from "@/components/photos/photo-image";
 import { PHOTO_CATEGORY_OPTIONS } from "@/lib/photo-categories";
@@ -292,47 +296,29 @@ export function PhotoDetailPanel() {
                 ))}
               </select>
             </div>
-
-            <div className="auth-field">
-              <label htmlFor="taken_year">Year</label>
-              <input
-                id="taken_year"
-                name="taken_year"
-                type="number"
-                inputMode="numeric"
-                value={values.taken_year}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="auth-field">
-              <label htmlFor="taken_month">Month</label>
-              <input
-                id="taken_month"
-                name="taken_month"
-                type="number"
-                inputMode="numeric"
-                min="1"
-                max="12"
-                value={values.taken_month}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="auth-field">
-              <label htmlFor="taken_day">Day</label>
-              <input
-                id="taken_day"
-                name="taken_day"
-                type="number"
-                inputMode="numeric"
-                min="1"
-                max="31"
-                value={values.taken_day}
-                onChange={handleChange}
-              />
-            </div>
           </div>
+
+          <PartialDateInput
+            legend="Photo date"
+            baseName="editDate"
+            value={createPartialDateValue(
+              values.taken_year,
+              values.taken_month,
+              values.taken_day,
+            )}
+            onChange={(nextValue) =>
+              setValues((currentValues) =>
+                currentValues
+                  ? {
+                      ...currentValues,
+                      taken_year: nextValue.year,
+                      taken_month: nextValue.month,
+                      taken_day: nextValue.day,
+                    }
+                  : currentValues,
+              )
+            }
+          />
 
           <PhotoLocationEditor
             locationText={values.location_text}

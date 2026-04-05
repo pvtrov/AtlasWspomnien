@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+import {
+  PartialDateInput,
+  type PartialDateValue,
+} from "@/components/photos/partial-date-input";
+import {
+  PartialDateRangeInput,
+  type PartialDateRangeValue,
+} from "@/components/photos/partial-date-range-input";
 import { PhotoImage } from "@/components/photos/photo-image";
 import { SharedSelectedPhotoPanel } from "@/components/photos/shared-selected-photo-panel";
 import { SimplePhotoMap } from "@/components/photos/simple-photo-map";
@@ -16,20 +24,37 @@ type FilterFormValues = {
   query: string;
   category: string;
   location: string;
-  takenYear: string;
-  takenMonth: string;
-  dateFrom: string;
-  dateTo: string;
+  exactDate: PartialDateValue;
+  range: PartialDateRangeValue;
+};
+
+type DateFilterMode = "exact" | "range";
+type FilterSummaryItem = {
+  key: string;
+  label: string;
 };
 
 const INITIAL_FILTERS: FilterFormValues = {
   query: "",
   category: "",
   location: "",
-  takenYear: "",
-  takenMonth: "",
-  dateFrom: "",
-  dateTo: "",
+  exactDate: {
+    year: "",
+    month: "",
+    day: "",
+  },
+  range: {
+    from: {
+      year: "",
+      month: "",
+      day: "",
+    },
+    to: {
+      year: "",
+      month: "",
+      day: "",
+    },
+  },
 };
 
 function formatPhotoDate(photo: Photo): string {
@@ -46,7 +71,46 @@ function formatPhotoDate(photo: Photo): string {
   return parts.join("-");
 }
 
-function buildSharedPhotoFilters(values: FilterFormValues): SharedPhotoFilters {
+function buildExactDateFilters(values: FilterFormValues): SharedPhotoFilters {
+  const filters = buildBaseSharedPhotoFilters(values);
+  const exactDate = buildPartialDateString(values.exactDate);
+
+  if (!exactDate) {
+    return filters;
+  }
+
+  if (values.exactDate.day.trim()) {
+    filters.date_from = exactDate;
+    filters.date_to = exactDate;
+    return filters;
+  }
+
+  filters.taken_year = Number(values.exactDate.year);
+
+  if (values.exactDate.month.trim()) {
+    filters.taken_month = Number(values.exactDate.month);
+  }
+
+  return filters;
+}
+
+function buildRangeDateFilters(values: FilterFormValues): SharedPhotoFilters {
+  const filters = buildBaseSharedPhotoFilters(values);
+  const dateFrom = buildPartialDateString(values.range.from);
+  const dateTo = buildPartialDateString(values.range.to);
+
+  if (dateFrom) {
+    filters.date_from = dateFrom;
+  }
+
+  if (dateTo) {
+    filters.date_to = dateTo;
+  }
+
+  return filters;
+}
+
+function buildBaseSharedPhotoFilters(values: FilterFormValues): SharedPhotoFilters {
   const filters: SharedPhotoFilters = {};
 
   if (values.query.trim()) {
@@ -61,23 +125,66 @@ function buildSharedPhotoFilters(values: FilterFormValues): SharedPhotoFilters {
     filters.location = values.location.trim();
   }
 
-  if (values.takenYear.trim()) {
-    filters.taken_year = Number(values.takenYear);
-  }
-
-  if (values.takenMonth.trim()) {
-    filters.taken_month = Number(values.takenMonth);
-  }
-
-  if (values.dateFrom.trim()) {
-    filters.date_from = values.dateFrom.trim();
-  }
-
-  if (values.dateTo.trim()) {
-    filters.date_to = values.dateTo.trim();
-  }
-
   return filters;
+}
+
+function buildPartialDateString(value: PartialDateValue): string | undefined {
+  if (!value.year.trim()) {
+    return undefined;
+  }
+
+  if (!value.month.trim()) {
+    return value.year.trim();
+  }
+
+  const month = value.month.trim().padStart(2, "0");
+  if (!value.day.trim()) {
+    return `${value.year.trim()}-${month}`;
+  }
+
+  return `${value.year.trim()}-${month}-${value.day.trim().padStart(2, "0")}`;
+}
+
+function buildFilterSummary(filters: SharedPhotoFilters): FilterSummaryItem[] {
+  const items: FilterSummaryItem[] = [];
+
+  if (filters.query) {
+    items.push({
+      key: "query",
+      label: `Query: ${filters.query}`,
+    });
+  }
+
+  if (filters.category) {
+    items.push({
+      key: "category",
+      label: `Category: ${filters.category}`,
+    });
+  }
+
+  if (filters.location) {
+    items.push({
+      key: "location",
+      label: `Location: ${filters.location}`,
+    });
+  }
+
+  if (filters.taken_year !== undefined) {
+    items.push({
+      key: "exact-date",
+      label:
+        filters.taken_month !== undefined
+          ? `Exact date: ${filters.taken_year}-${String(filters.taken_month).padStart(2, "0")}`
+          : `Exact date: ${filters.taken_year}`,
+    });
+  } else if (filters.date_from || filters.date_to) {
+    items.push({
+      key: "range-date",
+      label: `Range: ${filters.date_from ?? "..." } -> ${filters.date_to ?? "..."}`,
+    });
+  }
+
+  return items;
 }
 
 export function SharedPhotosPanel() {
@@ -88,6 +195,8 @@ export function SharedPhotosPanel() {
   const [filterValues, setFilterValues] = useState<FilterFormValues>(INITIAL_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState<SharedPhotoFilters>({});
   const [mapViewResetKey, setMapViewResetKey] = useState(0);
+  const [dateFilterMode, setDateFilterMode] = useState<DateFilterMode>("exact");
+  const [areFiltersExpanded, setAreFiltersExpanded] = useState(false);
 
   useEffect(() => {
     async function loadPhotos(): Promise<void> {
@@ -129,9 +238,7 @@ export function SharedPhotosPanel() {
     void loadPhotos();
   }, [appliedFilters]);
 
-  function handleFilterChange(
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ): void {
+  function handleFilterChange(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>): void {
     const { name, value } = event.target;
     setFilterValues((currentValues) => ({
       ...currentValues,
@@ -141,7 +248,7 @@ export function SharedPhotosPanel() {
 
   function handleApplyFilters(event: React.FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    setAppliedFilters(buildSharedPhotoFilters(filterValues));
+    setAppliedFilters(buildSharedPhotoFiltersForMode(filterValues, dateFilterMode));
     setMapViewResetKey((currentValue) => currentValue + 1);
   }
 
@@ -157,6 +264,8 @@ export function SharedPhotosPanel() {
     (photo) => photo.latitude !== null && photo.longitude !== null,
   );
   const hasActiveFilters = Object.keys(appliedFilters).length > 0;
+  const activeFiltersLabel = hasActiveFilters ? "Filters active" : "No filters applied";
+  const filterSummaryItems = buildFilterSummary(appliedFilters);
 
   return (
     <section className="photo-panel">
@@ -168,110 +277,147 @@ export function SharedPhotosPanel() {
         <p className="photo-panel__meta">{message}</p>
       </div>
 
-      <form className="photo-filters" onSubmit={handleApplyFilters}>
-        <div className="photo-filters__grid">
-          <div className="auth-field">
-            <label htmlFor="query">Search text</label>
-            <input
-              id="query"
-              name="query"
-              value={filterValues.query}
-              onChange={handleFilterChange}
-              placeholder="Description, location, or category"
-            />
+      <div className="photo-filters-shell">
+        <div className="photo-panel__heading photo-panel__heading--compact">
+          <div>
+            <p className="eyebrow">Search and filters</p>
+            <h2>Refine archive discovery</h2>
+            <div className="photo-filter-summary" aria-live="polite">
+              {filterSummaryItems.length > 0 ? (
+                filterSummaryItems.map((item) => (
+                  <span key={item.key} className="photo-filter-summary__item">
+                    {item.label}
+                  </span>
+                ))
+              ) : (
+                <span className="photo-filter-summary__empty">No filters applied.</span>
+              )}
+            </div>
           </div>
-
-          <div className="auth-field">
-            <label htmlFor="category">Category</label>
-            <select
-              id="category"
-              name="category"
-              value={filterValues.category}
-              onChange={handleFilterChange}
+          <div className="photo-filters-shell__actions">
+            <p className="photo-panel__meta">{activeFiltersLabel}</p>
+            <button
+              type="button"
+              className="button button--secondary"
+              onClick={() => setAreFiltersExpanded((currentValue) => !currentValue)}
             >
-              <option value="">All categories</option>
-              {PHOTO_CATEGORY_OPTIONS.map((option) => (
-                <option key={option.slug} value={option.slug}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="location">Location text</label>
-            <input
-              id="location"
-              name="location"
-              value={filterValues.location}
-              onChange={handleFilterChange}
-              placeholder="Town square, district, street..."
-            />
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="takenYear">Exact year</label>
-            <input
-              id="takenYear"
-              name="takenYear"
-              type="number"
-              inputMode="numeric"
-              value={filterValues.takenYear}
-              onChange={handleFilterChange}
-              placeholder="1982"
-            />
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="takenMonth">Exact month</label>
-            <input
-              id="takenMonth"
-              name="takenMonth"
-              type="number"
-              inputMode="numeric"
-              value={filterValues.takenMonth}
-              onChange={handleFilterChange}
-              placeholder="Requires exact year"
-            />
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="dateFrom">Range start</label>
-            <input
-              id="dateFrom"
-              name="dateFrom"
-              value={filterValues.dateFrom}
-              onChange={handleFilterChange}
-              placeholder="YYYY or YYYY-MM"
-            />
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="dateTo">Range end</label>
-            <input
-              id="dateTo"
-              name="dateTo"
-              value={filterValues.dateTo}
-              onChange={handleFilterChange}
-              placeholder="YYYY or YYYY-MM"
-            />
+              {areFiltersExpanded ? "Hide filters" : "Show filters"}
+            </button>
           </div>
         </div>
 
-        <div className="photo-panel__actions">
-          <button type="submit" className="auth-form__submit" disabled={isLoading}>
-            {isLoading ? "Loading..." : "Apply filters"}
-          </button>
-          <button
-            type="button"
-            className="button button--secondary"
-            onClick={handleResetFilters}
-            disabled={isLoading}
-          >
-            Clear filters
-          </button>
-        </div>
-      </form>
+        {areFiltersExpanded ? (
+          <form className="photo-filters" onSubmit={handleApplyFilters}>
+            <div className="photo-filters__grid">
+              <div className="auth-field">
+                <label htmlFor="query">Search text</label>
+                <input
+                  id="query"
+                  name="query"
+                  value={filterValues.query}
+                  onChange={handleFilterChange}
+                  placeholder="Description, location, or category"
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="category">Category</label>
+                <select
+                  id="category"
+                  name="category"
+                  value={filterValues.category}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">All categories</option>
+                  {PHOTO_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.slug} value={option.slug}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="location">Location text</label>
+                <input
+                  id="location"
+                  name="location"
+                  value={filterValues.location}
+                  onChange={handleFilterChange}
+                  placeholder="Town square, district, street..."
+                />
+              </div>
+            </div>
+
+            <div className="photo-filters__date-mode">
+              <span className="photo-filters__section-label">Date mode</span>
+              <div className="photo-filters__toggle">
+                <button
+                  type="button"
+                  className={`photo-filters__toggle-button${
+                    dateFilterMode === "exact" ? " photo-filters__toggle-button--active" : ""
+                  }`}
+                  onClick={() => setDateFilterMode("exact")}
+                >
+                  Exact date
+                </button>
+                <button
+                  type="button"
+                  className={`photo-filters__toggle-button${
+                    dateFilterMode === "range" ? " photo-filters__toggle-button--active" : ""
+                  }`}
+                  onClick={() => setDateFilterMode("range")}
+                >
+                  Range
+                </button>
+              </div>
+            </div>
+
+            <div className="photo-filters__date-layout">
+              {dateFilterMode === "exact" ? (
+                <PartialDateInput
+                  legend="Exact archive date"
+                  baseName="exactDate"
+                  yearLabel="Year"
+                  monthLabel="Month"
+                  dayLabel="Day"
+                  value={filterValues.exactDate}
+                  onChange={(nextValue) =>
+                    setFilterValues((currentValues) => ({
+                      ...currentValues,
+                      exactDate: nextValue,
+                    }))
+                  }
+                />
+              ) : (
+                <PartialDateRangeInput
+                  value={filterValues.range}
+                  onChange={(nextValue) =>
+                    setFilterValues((currentValues) => ({
+                      ...currentValues,
+                      range: nextValue,
+                    }))
+                  }
+                />
+              )}
+            </div>
+
+            <div className="photo-panel__actions">
+              <button type="submit" className="auth-form__submit" disabled={isLoading}>
+                {isLoading ? "Loading..." : "Apply filters"}
+              </button>
+              <button
+                type="button"
+                className="button button--secondary"
+                onClick={handleResetFilters}
+                disabled={isLoading}
+              >
+                Clear filters
+              </button>
+            </div>
+          </form>
+        ) : null}
+      </div>
 
       {!isLoading && photos.length === 0 ? (
         <p className="photo-list__empty">
@@ -359,4 +505,15 @@ export function SharedPhotosPanel() {
       </div>
     </section>
   );
+}
+
+function buildSharedPhotoFiltersForMode(
+  values: FilterFormValues,
+  mode: DateFilterMode,
+): SharedPhotoFilters {
+  if (mode === "exact") {
+    return buildExactDateFilters(values);
+  }
+
+  return buildRangeDateFilters(values);
 }

@@ -340,6 +340,10 @@ a {
   margin-bottom: 1rem;
 }
 
+.photo-panel__heading--compact {
+  margin-bottom: 0;
+}
+
 .photo-panel__meta {
   margin: 0;
   color: var(--color-text-soft);
@@ -374,10 +378,121 @@ a {
   background: rgba(255, 255, 255, 0.52);
 }
 
+.photo-filters-shell {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.photo-filters-shell__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.photo-filter-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.photo-filter-summary__item,
+.photo-filter-summary__empty {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.photo-filter-summary__item {
+  background: rgba(143, 79, 29, 0.12);
+  color: var(--color-accent-strong);
+  font-weight: 600;
+}
+
+.photo-filter-summary__empty {
+  background: rgba(72, 52, 37, 0.08);
+  color: var(--color-text-soft);
+}
+
 .photo-filters__grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+}
+
+.photo-filters__date-mode {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.photo-filters__section-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.photo-filters__toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.photo-filters__toggle-button {
+  border: 1px solid rgba(72, 52, 37, 0.18);
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.photo-filters__toggle-button--active {
+  border-color: rgba(123, 67, 24, 0.35);
+  background: rgba(143, 79, 29, 0.14);
+  color: var(--color-accent-strong);
+}
+
+.photo-filters__toggle-button:focus-visible {
+  outline: 2px solid rgba(143, 79, 29, 0.28);
+  outline-offset: 2px;
+}
+
+.photo-filters__date-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.partial-date-input {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid rgba(72, 52, 37, 0.14);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.partial-date-input legend {
+  padding: 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.partial-date-input__grid,
+.partial-date-range-input {
+  display: grid;
+  gap: 1rem;
+}
+
+.partial-date-input__grid {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
 }
 
 .photo-list {
