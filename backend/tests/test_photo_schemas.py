@@ -12,6 +12,7 @@ def test_photo_create_accepts_full_metadata() -> None:
     payload = PhotoCreate(
         category_slug="ulica",
         description="Historic bridge during winter.",
+        display_name="Bridge in winter",
         location_text="River Crossing",
         taken_year=1972,
         taken_month=1,
@@ -21,6 +22,7 @@ def test_photo_create_accepts_full_metadata() -> None:
 
     assert payload.category_slug == "ulica"
     assert payload.description == "Historic bridge during winter."
+    assert payload.display_name == "Bridge in winter"
     assert payload.location_text == "River Crossing"
     assert payload.taken_year == 1972
     assert payload.taken_month == 1
@@ -100,6 +102,7 @@ def test_photo_read_serializes_from_model() -> None:
         owner_id=3,
         category_id=2,
         description="Main avenue after renovation.",
+        display_name="Main avenue renovation",
         location_text="Main Avenue",
         taken_year=1991,
         taken_month=9,
@@ -117,6 +120,7 @@ def test_photo_read_serializes_from_model() -> None:
         "owner_id": 3,
         "category_id": 2,
         "description": "Main avenue after renovation.",
+        "display_name": "Main avenue renovation",
         "location_text": "Main Avenue",
         "taken_year": 1991,
         "taken_month": 9,

@@ -22,6 +22,7 @@ import {
 type EditValues = {
   category_slug: string;
   description: string;
+  display_name: string;
   location_text: string;
   latitude: string;
   longitude: string;
@@ -36,6 +37,7 @@ function createEditValues(photo: Photo): EditValues {
   return {
     category_slug: photo.category.slug,
     description: photo.description,
+    display_name: photo.display_name ?? "",
     location_text: photo.location_text,
     latitude: photo.latitude !== null ? String(photo.latitude) : "",
     longitude: photo.longitude !== null ? String(photo.longitude) : "",
@@ -145,6 +147,7 @@ export function SharedPhotoDetailPanel() {
       const updatedPhoto = await updateAdminPhoto(token, photoId, {
         category_slug: values.category_slug,
         description: values.description.trim(),
+        display_name: values.display_name.trim(),
         location_text: values.location_text.trim(),
         ...buildUpdateCoordinates(values),
         taken_year: Number(values.taken_year),
@@ -207,16 +210,24 @@ export function SharedPhotoDetailPanel() {
     <section className="photo-detail-layout">
       <article className="photo-panel">
         <p className="eyebrow">Shared archive photo</p>
-        <h1>{photo.location_text}</h1>
+        <h1>{photo.display_name || photo.location_text}</h1>
         {photo.description ? <p className="lede">{photo.description}</p> : null}
 
         <PhotoImage
           photoId={photo.id}
-          alt={photo.description || `Archive photo from ${photo.location_text}`}
+          alt={photo.display_name || photo.description || `Archive photo from ${photo.location_text}`}
           className="photo-detail__image"
         />
 
         <dl className="photo-detail__meta">
+          <div>
+            <dt>Photo title</dt>
+            <dd>{photo.display_name || photo.location_text}</dd>
+          </div>
+          <div>
+            <dt>Location</dt>
+            <dd>{photo.location_text}</dd>
+          </div>
           <div>
             <dt>Category</dt>
             <dd>{photo.category.name}</dd>
@@ -335,6 +346,18 @@ export function SharedPhotoDetailPanel() {
                   )
                 }
               />
+
+              <div className="auth-field">
+                <label htmlFor="display_name">Photo title</label>
+                <input
+                  id="display_name"
+                  name="display_name"
+                  type="text"
+                  value={values.display_name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
               <div className="auth-field">
                 <label htmlFor="description">Description</label>

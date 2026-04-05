@@ -21,6 +21,7 @@ type UploadFormValues = {
   file: File | null;
   category_slug: string;
   description: string;
+  display_name: string;
   location_text: string;
   latitude: string;
   longitude: string;
@@ -33,6 +34,7 @@ const initialUploadValues: UploadFormValues = {
   file: null,
   category_slug: PHOTO_CATEGORY_OPTIONS[0].slug,
   description: "",
+  display_name: "",
   location_text: "",
   latitude: "",
   longitude: "",
@@ -152,6 +154,7 @@ export function CreatorPhotosPanel() {
         file: values.file,
         category_slug: values.category_slug,
         description: values.description.trim(),
+        display_name: values.display_name.trim(),
         location_text: values.location_text.trim(),
         ...buildCreateCoordinates(values),
         taken_year: Number(values.taken_year),
@@ -282,6 +285,18 @@ export function CreatorPhotosPanel() {
           />
 
           <div className="auth-field">
+            <label htmlFor="display_name">Photo title</label>
+            <input
+              id="display_name"
+              name="display_name"
+              type="text"
+              value={values.display_name}
+              onChange={handleFieldChange}
+              required
+            />
+          </div>
+
+          <div className="auth-field">
             <label htmlFor="description">Description</label>
             <textarea
               id="description"
@@ -323,13 +338,14 @@ export function CreatorPhotosPanel() {
               {token ? (
                 <PhotoImage
                   photoId={photo.id}
-                  alt={photo.description}
+                  alt={photo.display_name || photo.description || `Archive photo from ${photo.location_text}`}
                   className="photo-card__image"
                 />
               ) : null}
               <div className="photo-card__body">
                 <p className="photo-card__category">{photo.category.name}</p>
-                <h3>{photo.location_text}</h3>
+                <h3>{photo.display_name || photo.location_text}</h3>
+                <p className="photo-card__meta">{photo.location_text}</p>
                 {photo.description ? <p>{photo.description}</p> : null}
                 <p className="photo-card__meta">{formatPhotoDate(photo)}</p>
                 <Link href={`/photos/${photo.id}`} className="inline-link">

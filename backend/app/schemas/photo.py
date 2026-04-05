@@ -17,6 +17,7 @@ class PhotoCategoryRead(BaseModel):
 class PhotoCreate(BaseModel):
     category_slug: str = Field(min_length=1, max_length=100)
     description: str = Field(default="", max_length=2000)
+    display_name: str | None = Field(default=None, max_length=255)
     location_text: str = Field(min_length=1, max_length=255)
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)
@@ -40,6 +41,7 @@ class PhotoRead(BaseModel):
     owner_id: int
     category_id: int
     description: str
+    display_name: str | None
     location_text: str
     latitude: float | None
     longitude: float | None
@@ -60,6 +62,7 @@ class PhotoCreateResponse(BaseModel):
 class PhotoUpdate(BaseModel):
     category_slug: str = Field(min_length=1, max_length=100)
     description: str = Field(default="", max_length=2000)
+    display_name: str | None = Field(default=None, max_length=255)
     location_text: str = Field(min_length=1, max_length=255)
     latitude: float | None = Field(default=None, ge=-90, le=90)
     longitude: float | None = Field(default=None, ge=-180, le=180)

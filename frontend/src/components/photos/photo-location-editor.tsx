@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { geocodeLocation } from "@/services/api-client";
+import {
+  geocodeLocation,
+  searchLocationSuggestions,
+  type LocationSuggestion,
+} from "@/services/api-client";
 import { SimplePhotoMap } from "@/components/photos/simple-photo-map";
 
 type Props = {
@@ -27,9 +31,12 @@ export function PhotoLocationEditor({
   onLongitudeTextChange,
 }: Props) {
   const [message, setMessage] = useState(
-    "Type a place name and geocode it, or click on the map to place a pin.",
+    "Type a location to get address suggestions, or enter coordinates manually and place a pin on the map.",
   );
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
+  const [selectedSuggestionLabel, setSelectedSuggestionLabel] = useState("");
 
   const hasCoordinates = latitudeText.trim() !== "" && longitudeText.trim() !== "";
   const pin = hasCoordinates
@@ -38,6 +45,47 @@ export function PhotoLocationEditor({
         longitude: Number(longitudeText),
       }
     : null;
+
+  useEffect(() => {
+    const trimmedLocation = locationText.trim();
+
+    if (trimmedLocation.length < 3) {
+      setSuggestions([]);
+      setIsSearchingSuggestions(false);
+      return;
+    }
+
+    if (trimmedLocation === selectedSuggestionLabel) {
+      setSuggestions([]);
+      setIsSearchingSuggestions(false);
+      return;
+    }
+
+    let isCancelled = false;
+    const timeoutId = window.setTimeout(async () => {
+      setIsSearchingSuggestions(true);
+
+      try {
+        const nextSuggestions = await searchLocationSuggestions(trimmedLocation);
+        if (!isCancelled) {
+          setSuggestions(nextSuggestions);
+        }
+      } catch {
+        if (!isCancelled) {
+          setSuggestions([]);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsSearchingSuggestions(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [locationText, selectedSuggestionLabel]);
 
   async function handleGeocode(): Promise<void> {
     if (!locationText.trim()) {
@@ -74,6 +122,15 @@ export function PhotoLocationEditor({
     setMessage("Coordinates cleared. The human-readable location text remains unchanged.");
   }
 
+  function handleSuggestionSelect(suggestion: LocationSuggestion): void {
+    setSelectedSuggestionLabel(suggestion.label);
+    onLocationTextChange(suggestion.label);
+    onLatitudeTextChange(formatCoordinate(suggestion.latitude));
+    onLongitudeTextChange(formatCoordinate(suggestion.longitude));
+    setSuggestions([]);
+    setMessage(`Location and coordinates resolved from "${suggestion.label}".`);
+  }
+
   return (
     <section className="location-editor">
       <div className="photo-form__grid">
@@ -84,8 +141,31 @@ export function PhotoLocationEditor({
             name="location_text"
             type="text"
             value={locationText}
-            onChange={(event) => onLocationTextChange(event.target.value)}
+            onChange={(event) => {
+              setSelectedSuggestionLabel("");
+              onLocationTextChange(event.target.value);
+            }}
           />
+          <p className="location-editor__hint">
+            Pick an address suggestion to fill in both the location text and coordinates automatically.
+          </p>
+          {isSearchingSuggestions ? (
+            <p className="location-editor__hint">Searching suggestions...</p>
+          ) : null}
+          {!isSearchingSuggestions && suggestions.length > 0 ? (
+            <div className="location-suggestions" role="listbox" aria-label="Location suggestions">
+              {suggestions.map((suggestion) => (
+                <button
+                  key={`${suggestion.label}-${suggestion.latitude}-${suggestion.longitude}`}
+                  type="button"
+                  className="location-suggestions__item"
+                  onClick={() => handleSuggestionSelect(suggestion)}
+                >
+                  {suggestion.label}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <div className="auth-field">

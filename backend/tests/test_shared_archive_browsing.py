@@ -44,6 +44,7 @@ def create_photo(
     owner_id: int,
     category_id: int,
     description: str = "Historic market square.",
+    display_name: str | None = None,
     location_text: str = "Rynek",
     taken_year: int = 1982,
     taken_month: int | None = 1,
@@ -54,6 +55,7 @@ def create_photo(
         owner_id=owner_id,
         category_id=category_id,
         description=description,
+        display_name=display_name,
         location_text=location_text,
         taken_year=taken_year,
         taken_month=taken_month,
@@ -91,6 +93,7 @@ def test_shared_photo_list_is_public_and_hides_file_reference(
     assert len(photos) == 1
     assert photos[0]["id"] == photo.id
     assert photos[0]["owner_id"] == creator.id
+    assert photos[0]["display_name"] is None
     assert "file_reference" not in photos[0]
 
 
@@ -119,6 +122,7 @@ def test_shared_photo_detail_is_public_and_hides_file_reference(
     assert payload["id"] == photo.id
     assert payload["owner_id"] == creator.id
     assert payload["category"]["slug"] == category.slug
+    assert payload["display_name"] is None
     assert "file_reference" not in payload
 
 
@@ -248,6 +252,40 @@ def test_shared_photo_list_location_filter_is_accent_insensitive(
     assert photos[0]["location_text"] == "Kraków"
 
 
+def test_shared_photo_list_location_filter_matches_plain_text_record_with_diacritics_query(
+    client,
+    db_session: Session,
+) -> None:
+    category = create_category(db_session)
+    creator = create_user(
+        db_session,
+        email="creator@example.com",
+        username="creator-one",
+        role=UserRole.CREATOR,
+    )
+    matching_photo = create_photo(
+        db_session,
+        owner_id=creator.id,
+        category_id=category.id,
+        location_text="krakow",
+    )
+    create_photo(
+        db_session,
+        owner_id=creator.id,
+        category_id=category.id,
+        location_text="warszawa",
+        file_reference="photos/example-6.jpg",
+    )
+
+    response = client.get("/api/v1/photos?location=kraków")
+
+    assert response.status_code == 200
+    photos = response.json()["photos"]
+    assert len(photos) == 1
+    assert photos[0]["id"] == matching_photo.id
+    assert photos[0]["location_text"] == "krakow"
+
+
 def test_shared_photo_list_query_is_accent_insensitive(
     client,
     db_session: Session,
@@ -282,6 +320,116 @@ def test_shared_photo_list_query_is_accent_insensitive(
     assert len(photos) == 1
     assert photos[0]["id"] == matching_photo.id
     assert photos[0]["description"] == "Spacer po Łagiewnikach."
+
+
+def test_shared_photo_list_query_matches_plain_text_record_with_diacritics_query(
+    client,
+    db_session: Session,
+) -> None:
+    category = create_category(db_session)
+    creator = create_user(
+        db_session,
+        email="creator@example.com",
+        username="creator-one",
+        role=UserRole.CREATOR,
+    )
+    matching_photo = create_photo(
+        db_session,
+        owner_id=creator.id,
+        category_id=category.id,
+        description="Stary kosciolek przy rynku.",
+        location_text="krakow",
+    )
+    create_photo(
+        db_session,
+        owner_id=creator.id,
+        category_id=category.id,
+        description="Nowoczesna biblioteka miejska.",
+        location_text="warszawa",
+        file_reference="photos/example-7.jpg",
+    )
+
+    response = client.get("/api/v1/photos?query=kościołek")
+
+    assert response.status_code == 200
+    photos = response.json()["photos"]
+    assert len(photos) == 1
+    assert photos[0]["id"] == matching_photo.id
+    assert photos[0]["description"] == "Stary kosciolek przy rynku."
+
+
+def test_shared_photo_list_query_matches_plain_text_record_with_polish_l_character(
+    client,
+    db_session: Session,
+) -> None:
+    category = create_category(db_session)
+    creator = create_user(
+        db_session,
+        email="creator@example.com",
+        username="creator-one",
+        role=UserRole.CREATOR,
+    )
+    matching_photo = create_photo(
+        db_session,
+        owner_id=creator.id,
+        category_id=category.id,
+        description="Mały kosciolek na wzgórzu.",
+        location_text="krakow",
+    )
+    create_photo(
+        db_session,
+        owner_id=creator.id,
+        category_id=category.id,
+        description="Duzy ratusz przy rynku.",
+        location_text="warszawa",
+        file_reference="photos/example-8.jpg",
+    )
+
+    response = client.get("/api/v1/photos?query=kościółek")
+
+    assert response.status_code == 200
+    photos = response.json()["photos"]
+    assert len(photos) == 1
+    assert photos[0]["id"] == matching_photo.id
+    assert photos[0]["description"] == "Mały kosciolek na wzgórzu."
+
+
+def test_shared_photo_list_query_matches_display_name(
+    client,
+    db_session: Session,
+) -> None:
+    category = create_category(db_session)
+    creator = create_user(
+        db_session,
+        email="creator@example.com",
+        username="creator-one",
+        role=UserRole.CREATOR,
+    )
+    matching_photo = create_photo(
+        db_session,
+        owner_id=creator.id,
+        category_id=category.id,
+        display_name="Brama Floriańska nocą",
+        description="Historic gate in evening light.",
+        location_text="Kraków",
+    )
+    create_photo(
+        db_session,
+        owner_id=creator.id,
+        category_id=category.id,
+        display_name="Planty o świcie",
+        description="Morning light in the park.",
+        location_text="Kraków",
+        file_reference="photos/example-5.jpg",
+    )
+
+    response = client.get("/api/v1/photos?query=florianska")
+
+    assert response.status_code == 200
+    photos = response.json()["photos"]
+    assert len(photos) == 1
+    assert photos[0]["id"] == matching_photo.id
+    assert photos[0]["display_name"] == "Brama Floriańska nocą"
 
 
 def test_shared_photo_list_location_filter_matches_all_entered_words(

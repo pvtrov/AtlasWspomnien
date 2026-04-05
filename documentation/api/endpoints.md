@@ -176,7 +176,7 @@ This endpoint is public and does not require authentication.
 
 All query parameters are optional.
 
-- `query`: case-insensitive and accent-insensitive text search across photo `description`, `location_text`, and category `name` and `slug`,
+- `query`: case-insensitive and accent-insensitive text search across photo `description`, `display_name`, `location_text`, and category `name` and `slug`,
 - `category`: exact category slug match,
 - `location`: case-insensitive and accent-insensitive token match on `location_text`,
 - `taken_year`: exact match on `taken_year`,
@@ -214,6 +214,7 @@ Body:
       "owner_id": 1,
       "category_id": 1,
       "description": "Historic market square in winter.",
+      "display_name": "Winter market square",
       "location_text": "Rynek",
       "latitude": 50.061947,
       "longitude": 19.936856,
@@ -237,6 +238,7 @@ Body:
 
 - the backend does not expose internal file storage references in shared archive responses,
 - the photo image must be retrieved through the dedicated image endpoint documented below,
+- `display_name` is the optional user-provided photo title and may be `null` for older records,
 - the response shape remains the same whether or not search and filters are applied.
 
 #### Error Responses
@@ -301,6 +303,7 @@ Fields:
 - `file`: required uploaded file,
 - `category_slug`: required string,
 - `description`: optional string,
+- `display_name`: optional string used as the human-facing photo title,
 - `location_text`: required string,
 - `latitude`: optional float,
 - `longitude`: optional float,
@@ -314,6 +317,7 @@ Example shape:
 file=<binary image>
 category_slug=ulica
 description=Historic market square in winter.
+display_name=Winter market square
 location_text=Rynek
 latitude=50.061947
 longitude=19.936856
@@ -327,6 +331,7 @@ taken_day=14
 - `file` is required,
 - `category_slug` is required and must match an existing backend photo category,
 - `description` may be empty,
+- `display_name` may be empty or omitted,
 - `location_text` is required,
 - `latitude` and `longitude` are optional and must be provided together when present,
 - `latitude`, if provided, must be between `-90` and `90`,
@@ -355,6 +360,7 @@ Body:
     "owner_id": 1,
     "category_id": 1,
     "description": "Historic market square in winter.",
+    "display_name": "Winter market square",
     "location_text": "Rynek",
     "latitude": 50.061947,
     "longitude": 19.936856,
@@ -485,6 +491,7 @@ Body:
       "owner_id": 1,
       "category_id": 1,
       "description": "Historic market square in winter.",
+      "display_name": "Winter market square",
       "location_text": "Rynek",
       "latitude": 50.061947,
       "longitude": 19.936856,
@@ -549,6 +556,7 @@ Body:
     "owner_id": 1,
     "category_id": 1,
     "description": "Historic market square in winter.",
+    "display_name": "Winter market square",
     "location_text": "Rynek",
     "latitude": 50.061947,
     "longitude": 19.936856,
@@ -650,6 +658,7 @@ Content-Type: application/json
 {
   "category_slug": "ulica",
   "description": "Historic market square after renovation.",
+  "display_name": "Winter market square",
   "location_text": "Rynek",
   "latitude": 50.061947,
   "longitude": 19.936856,
@@ -663,6 +672,7 @@ Content-Type: application/json
 
 - this first Sprint 3 edit flow covers metadata only,
 - `description` may be empty in this first version,
+- `display_name` is the optional user-provided photo title,
 - file replacement is out of scope for this endpoint,
 - the same validation rules used by photo creation apply to category, coordinate, and date fields,
 - sending both `latitude` and `longitude` as `null` clears stored coordinates while keeping `location_text`.
@@ -684,6 +694,7 @@ Body:
     "owner_id": 1,
     "category_id": 1,
     "description": "Historic market square after renovation.",
+    "display_name": "Winter market square",
     "location_text": "Rynek",
     "latitude": 50.061947,
     "longitude": 19.936856,
@@ -1036,6 +1047,7 @@ Content-Type: application/json
 {
   "category_slug": "ulica",
   "description": "Corrected historical description.",
+  "display_name": "Corrected market square title",
   "location_text": "Rynek",
   "latitude": 50.061947,
   "longitude": 19.936856,
@@ -1062,6 +1074,7 @@ Body:
     "owner_id": 2,
     "category_id": 1,
     "description": "Corrected historical description.",
+    "display_name": "Corrected market square title",
     "location_text": "Rynek",
     "latitude": 50.061947,
     "longitude": 19.936856,

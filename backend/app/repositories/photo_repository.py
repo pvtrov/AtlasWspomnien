@@ -1,9 +1,25 @@
+import unicodedata
+
 from sqlalchemy import case, func, literal, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.photo import Photo
 from app.models.photo_category import PhotoCategory
 from app.schemas.photo import PhotoListFilters, parse_partial_date_bound
+
+POLISH_ASCII_TRANSLATION = str.maketrans(
+    {
+        "ą": "a",
+        "ć": "c",
+        "ę": "e",
+        "ł": "l",
+        "ń": "n",
+        "ó": "o",
+        "ś": "s",
+        "ź": "z",
+        "ż": "z",
+    }
+)
 
 
 class PhotoRepository:
@@ -16,6 +32,7 @@ class PhotoRepository:
         owner_id: int,
         category_id: int,
         description: str,
+        display_name: str | None,
         location_text: str,
         latitude: float | None,
         longitude: float | None,
@@ -28,6 +45,7 @@ class PhotoRepository:
             owner_id=owner_id,
             category_id=category_id,
             description=description,
+            display_name=display_name,
             location_text=location_text,
             latitude=latitude,
             longitude=longitude,
@@ -66,6 +84,7 @@ class PhotoRepository:
             statement = statement.where(
                 or_(
                     self._normalized_text(Photo.description).like(pattern),
+                    self._normalized_text(func.coalesce(Photo.display_name, literal(""))).like(pattern),
                     self._normalized_text(Photo.location_text).like(pattern),
                     self._normalized_text(PhotoCategory.slug).like(pattern),
                     self._normalized_text(PhotoCategory.name).like(pattern),
@@ -129,6 +148,7 @@ class PhotoRepository:
         *,
         category_id: int,
         description: str,
+        display_name: str | None,
         location_text: str,
         latitude: float | None,
         longitude: float | None,
@@ -138,6 +158,7 @@ class PhotoRepository:
     ) -> Photo:
         photo.category_id = category_id
         photo.description = description
+        photo.display_name = display_name
         photo.location_text = location_text
         photo.latitude = latitude
         photo.longitude = longitude
@@ -195,10 +216,14 @@ class PhotoRepository:
         return (year * 10000) + (month * 100) + day
 
     def _normalized_pattern(self, value: str) -> str:
-        return f"%{value.lower()}%"
+        return f"%{self._normalize_search_value(value)}%"
 
     def _normalized_text(self, value):
         return func.unaccent(func.lower(value))
 
     def _search_tokens(self, value: str) -> list[str]:
-        return [token for token in value.lower().split() if token]
+        return [token for token in self._normalize_search_value(value).split() if token]
+
+    def _normalize_search_value(self, value: str) -> str:
+        normalized = unicodedata.normalize("NFKD", value.lower().translate(POLISH_ASCII_TRANSLATION))
+        return "".join(character for character in normalized if not unicodedata.combining(character))

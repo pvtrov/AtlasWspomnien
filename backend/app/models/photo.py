@@ -32,6 +32,7 @@ class Photo(Base):
         nullable=False,
     )
     description: Mapped[str] = mapped_column(String(2000), nullable=False)
+    display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     location_text: Mapped[str] = mapped_column(String(255), nullable=False)
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)

@@ -452,12 +452,15 @@ export function SharedPhotosPanel() {
                 >
                   <PhotoImage
                     photoId={photo.id}
-                    alt={photo.description || `Archive photo from ${photo.location_text}`}
+                    alt={
+                      photo.display_name || photo.description || `Archive photo from ${photo.location_text}`
+                    }
                     className="photo-card__image"
                   />
                   <div className="photo-card__body">
                     <p className="photo-card__category">{photo.category.name}</p>
-                    <h3>{photo.location_text}</h3>
+                    <h3>{photo.display_name || photo.location_text}</h3>
+                    <p className="photo-card__meta">{photo.location_text}</p>
                     {photo.description ? <p>{photo.description}</p> : null}
                     <p className="photo-card__meta">{formatPhotoDate(photo)}</p>
                     <span className="inline-link">Show details on the right</span>
