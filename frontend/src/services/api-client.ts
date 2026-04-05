@@ -117,6 +117,16 @@ export type PhotoListResponse = {
   photos: Photo[];
 };
 
+export type SharedPhotoFilters = {
+  query?: string;
+  category?: string;
+  location?: string;
+  taken_year?: number;
+  taken_month?: number;
+  date_from?: string;
+  date_to?: string;
+};
+
 export type BackendStatusResult = {
   label: string;
   message: string;
@@ -309,8 +319,39 @@ export async function listOwnedPhotos(
   return payload.photos;
 }
 
-export async function listSharedPhotos(): Promise<Photo[]> {
-  const response = await fetch(buildApiUrl("/api/v1/photos"));
+export async function listSharedPhotos(filters: SharedPhotoFilters = {}): Promise<Photo[]> {
+  const searchParams = new URLSearchParams();
+
+  if (filters.query) {
+    searchParams.set("query", filters.query);
+  }
+
+  if (filters.category) {
+    searchParams.set("category", filters.category);
+  }
+
+  if (filters.location) {
+    searchParams.set("location", filters.location);
+  }
+
+  if (filters.taken_year !== undefined) {
+    searchParams.set("taken_year", String(filters.taken_year));
+  }
+
+  if (filters.taken_month !== undefined) {
+    searchParams.set("taken_month", String(filters.taken_month));
+  }
+
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+
+  const suffix = searchParams.size > 0 ? `?${searchParams.toString()}` : "";
+  const response = await fetch(buildApiUrl(`/api/v1/photos${suffix}`));
 
   if (!response.ok) {
     throw new Error(await readErrorMessage(response));

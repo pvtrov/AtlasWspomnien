@@ -172,6 +172,30 @@ This endpoint is intended to support the future home-page and public archive exp
 
 This endpoint is public and does not require authentication.
 
+#### Query Parameters
+
+All query parameters are optional.
+
+- `query`: case-insensitive and accent-insensitive text search across photo `description`, `location_text`, and category `name` and `slug`,
+- `category`: exact category slug match,
+- `location`: case-insensitive and accent-insensitive token match on `location_text`,
+- `taken_year`: exact match on `taken_year`,
+- `taken_month`: exact match on `taken_month`; this parameter requires `taken_year`,
+- `date_from`: inclusive lower date bound in `YYYY`, `YYYY-MM`, or `YYYY-MM-DD` format,
+- `date_to`: inclusive upper date bound in `YYYY`, `YYYY-MM`, or `YYYY-MM-DD` format.
+
+#### Query Notes
+
+- `taken_year=1982` filters photos to that exact year,
+- `taken_year=1982&taken_month=1` filters photos to January 1982,
+- `date_from=2022&date_to=2024` filters photos to the inclusive 2022 through 2024 range,
+- `date_from=2026-03&date_to=2026-07` filters photos to the inclusive March 2026 through July 2026 range,
+- text search and location filtering ignore differences in case and Polish diacritics such as `Krakow` versus `Kraków`,
+- `location` matches all entered words, not only one exact phrase, so `skarbinskiego krakow` can match `Skarbińskiego 10, Kraków`,
+- date-range filtering is strict for partially known historical dates: a photo is returned only when its stored date precision is sufficient to place it fully inside the requested range,
+- a photo stored only with `taken_year=2026` may match a year-wide range for 2026, but it does not match a narrower range such as `2026-03` through `2026-07`,
+- `date_from` must not be later than `date_to`.
+
 #### Success Response
 
 Status:
@@ -212,7 +236,38 @@ Body:
 #### Response Notes
 
 - the backend does not expose internal file storage references in shared archive responses,
-- the photo image must be retrieved through the dedicated image endpoint documented below.
+- the photo image must be retrieved through the dedicated image endpoint documented below,
+- the response shape remains the same whether or not search and filters are applied.
+
+#### Error Responses
+
+`422 Unprocessable Entity`
+
+```json
+{
+  "detail": [
+    {
+      "loc": [],
+      "msg": "Value error, taken_month requires taken_year.",
+      "type": "value_error"
+    }
+  ]
+}
+```
+
+or
+
+```json
+{
+  "detail": [
+    {
+      "loc": [],
+      "msg": "Value error, date_from must be earlier than or equal to date_to.",
+      "type": "value_error"
+    }
+  ]
+}
+```
 
 ## Non-Public Endpoints
 

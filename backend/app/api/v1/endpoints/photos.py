@@ -2,7 +2,7 @@ import logging
 import mimetypes
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
 from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
@@ -22,6 +22,7 @@ from app.repositories.photo_repository import PhotoRepository
 from app.schemas.photo import (
     PhotoCreate,
     PhotoCreateResponse,
+    PhotoListFilters,
     PhotoListResponse,
     PhotoResponse,
     PhotoUpdate,
@@ -69,6 +70,32 @@ def parse_photo_create(
             taken_day,
             exc.errors(),
         )
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=exc.errors(),
+        ) from exc
+
+
+def parse_photo_list_filters(
+    query: Annotated[str | None, Query(max_length=255)] = None,
+    category: Annotated[str | None, Query(max_length=100)] = None,
+    location: Annotated[str | None, Query(max_length=255)] = None,
+    taken_year: Annotated[int | None, Query(ge=1, le=9999)] = None,
+    taken_month: Annotated[int | None, Query(ge=1, le=12)] = None,
+    date_from: Annotated[str | None, Query(max_length=10)] = None,
+    date_to: Annotated[str | None, Query(max_length=10)] = None,
+) -> PhotoListFilters:
+    try:
+        return PhotoListFilters(
+            query=query,
+            category=category,
+            location=location,
+            taken_year=taken_year,
+            taken_month=taken_month,
+            date_from=date_from,
+            date_to=date_to,
+        )
+    except ValidationError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=exc.errors(),
@@ -227,8 +254,11 @@ def upload_photo(
 
 
 @router.get("", response_model=PhotoListResponse)
-def list_shared_photos(db: DbSession) -> PhotoListResponse:
-    photos = PhotoRepository(db).list_all()
+def list_shared_photos(
+    filters: Annotated[PhotoListFilters, Depends(parse_photo_list_filters)],
+    db: DbSession,
+) -> PhotoListResponse:
+    photos = PhotoRepository(db).list_shared(filters=filters)
     return PhotoListResponse(photos=photos)
 
 

@@ -1,7 +1,9 @@
-from sqlalchemy import select
+from sqlalchemy import case, func, literal, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.photo import Photo
+from app.models.photo_category import PhotoCategory
+from app.schemas.photo import PhotoListFilters, parse_partial_date_bound
 
 
 class PhotoRepository:
@@ -56,6 +58,52 @@ class PhotoRepository:
         )
         return list(self.db.scalars(statement).unique())
 
+    def list_shared(self, *, filters: PhotoListFilters) -> list[Photo]:
+        statement = select(Photo).options(joinedload(Photo.category)).join(Photo.category)
+
+        if filters.query is not None:
+            pattern = self._normalized_pattern(filters.query)
+            statement = statement.where(
+                or_(
+                    self._normalized_text(Photo.description).like(pattern),
+                    self._normalized_text(Photo.location_text).like(pattern),
+                    self._normalized_text(PhotoCategory.slug).like(pattern),
+                    self._normalized_text(PhotoCategory.name).like(pattern),
+                )
+            )
+
+        if filters.category is not None:
+            statement = statement.where(PhotoCategory.slug == filters.category)
+
+        if filters.location is not None:
+            for token in self._search_tokens(filters.location):
+                statement = statement.where(
+                    self._normalized_text(Photo.location_text).like(
+                        self._normalized_pattern(token)
+                    )
+                )
+
+        if filters.taken_year is not None:
+            statement = statement.where(Photo.taken_year == filters.taken_year)
+
+        if filters.taken_month is not None:
+            statement = statement.where(Photo.taken_month == filters.taken_month)
+
+        lower_bound = parse_partial_date_bound(filters.date_from, is_upper=False)
+        upper_bound = parse_partial_date_bound(filters.date_to, is_upper=True)
+
+        photo_lower_bound = self._photo_lower_bound()
+        photo_upper_bound = self._photo_upper_bound()
+
+        if lower_bound is not None:
+            statement = statement.where(photo_lower_bound >= self._date_key(*lower_bound))
+
+        if upper_bound is not None:
+            statement = statement.where(photo_upper_bound <= self._date_key(*upper_bound))
+
+        statement = statement.order_by(Photo.created_at.desc(), Photo.id.desc())
+        return list(self.db.scalars(statement).unique())
+
     def get_by_id(self, *, photo_id: int) -> Photo | None:
         statement = (
             select(Photo)
@@ -105,3 +153,52 @@ class PhotoRepository:
     def delete(self, photo: Photo) -> None:
         self.db.delete(photo)
         self.db.commit()
+
+    def _photo_lower_bound(self):
+        return self._date_key_expression(
+            year=Photo.taken_year,
+            month=func.coalesce(Photo.taken_month, literal(1)),
+            day=func.coalesce(Photo.taken_day, literal(1)),
+        )
+
+    def _photo_upper_bound(self):
+        month = func.coalesce(Photo.taken_month, literal(12))
+        day = case(
+            (Photo.taken_day.is_not(None), Photo.taken_day),
+            (Photo.taken_month.is_(None), literal(31)),
+            (month.in_([1, 3, 5, 7, 8, 10, 12]), literal(31)),
+            (month.in_([4, 6, 9, 11]), literal(30)),
+            (
+                func.mod(Photo.taken_year, 400) == 0,
+                literal(29),
+            ),
+            (
+                func.mod(Photo.taken_year, 100) == 0,
+                literal(28),
+            ),
+            (
+                func.mod(Photo.taken_year, 4) == 0,
+                literal(29),
+            ),
+            else_=literal(28),
+        )
+        return self._date_key_expression(
+            year=Photo.taken_year,
+            month=month,
+            day=day,
+        )
+
+    def _date_key(self, year: int, month: int, day: int) -> int:
+        return (year * 10000) + (month * 100) + day
+
+    def _date_key_expression(self, *, year, month, day):
+        return (year * 10000) + (month * 100) + day
+
+    def _normalized_pattern(self, value: str) -> str:
+        return f"%{value.lower()}%"
+
+    def _normalized_text(self, value):
+        return func.unaccent(func.lower(value))
+
+    def _search_tokens(self, value: str) -> list[str]:
+        return [token for token in value.lower().split() if token]
