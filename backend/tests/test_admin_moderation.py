@@ -45,12 +45,14 @@ def create_photo(
     *,
     owner_id: int,
     category_id: int,
+    display_name: str | None = None,
     file_reference: str | None = None,
 ) -> Photo:
     photo = Photo(
         owner_id=owner_id,
         category_id=category_id,
         description="Historic market square.",
+        display_name=display_name,
         location_text="Rynek",
         taken_year=1982,
         taken_month=1,
@@ -483,6 +485,7 @@ def test_admin_can_read_edit_and_delete_other_creator_photo(
         json={
             "category_slug": "budynek",
             "description": "Corrected by admin",
+            "display_name": "Rynek po korekcie",
             "location_text": "Nowy Rynek",
             "taken_year": 1983,
             "taken_month": 2,
@@ -494,6 +497,7 @@ def test_admin_can_read_edit_and_delete_other_creator_photo(
     patched_photo = patch_response.json()["photo"]
     assert patched_photo["category"]["slug"] == other_category.slug
     assert patched_photo["description"] == "Corrected by admin"
+    assert patched_photo["display_name"] == "Rynek po korekcie"
     assert patched_photo["location_text"] == "Nowy Rynek"
 
     delete_response = client.delete(f"/api/v1/admin/photos/{photo.id}", headers=headers)

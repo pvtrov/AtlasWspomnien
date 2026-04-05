@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import {
+  createPartialDateValue,
+  PartialDateInput,
+} from "@/components/photos/partial-date-input";
 import { PhotoLocationEditor } from "@/components/photos/photo-location-editor";
 import { PHOTO_CATEGORY_OPTIONS } from "@/lib/photo-categories";
 import {
@@ -17,6 +21,7 @@ type UploadFormValues = {
   file: File | null;
   category_slug: string;
   description: string;
+  display_name: string;
   location_text: string;
   latitude: string;
   longitude: string;
@@ -29,6 +34,7 @@ const initialUploadValues: UploadFormValues = {
   file: null,
   category_slug: PHOTO_CATEGORY_OPTIONS[0].slug,
   description: "",
+  display_name: "",
   location_text: "",
   latitude: "",
   longitude: "",
@@ -148,6 +154,7 @@ export function CreatorPhotosPanel() {
         file: values.file,
         category_slug: values.category_slug,
         description: values.description.trim(),
+        display_name: values.display_name.trim(),
         location_text: values.location_text.trim(),
         ...buildCreateCoordinates(values),
         taken_year: Number(values.taken_year),
@@ -233,47 +240,25 @@ export function CreatorPhotosPanel() {
                 ))}
               </select>
             </div>
-
-            <div className="auth-field">
-              <label htmlFor="taken_year">Year</label>
-              <input
-                id="taken_year"
-                name="taken_year"
-                type="number"
-                inputMode="numeric"
-                value={values.taken_year}
-                onChange={handleFieldChange}
-              />
-            </div>
-
-            <div className="auth-field">
-              <label htmlFor="taken_month">Month</label>
-              <input
-                id="taken_month"
-                name="taken_month"
-                type="number"
-                inputMode="numeric"
-                min="1"
-                max="12"
-                value={values.taken_month}
-                onChange={handleFieldChange}
-              />
-            </div>
-
-            <div className="auth-field">
-              <label htmlFor="taken_day">Day</label>
-              <input
-                id="taken_day"
-                name="taken_day"
-                type="number"
-                inputMode="numeric"
-                min="1"
-                max="31"
-                value={values.taken_day}
-                onChange={handleFieldChange}
-              />
-            </div>
           </div>
+
+          <PartialDateInput
+            legend="Photo date"
+            baseName="uploadDate"
+            value={createPartialDateValue(
+              values.taken_year,
+              values.taken_month,
+              values.taken_day,
+            )}
+            onChange={(nextValue) =>
+              setValues((currentValues) => ({
+                ...currentValues,
+                taken_year: nextValue.year,
+                taken_month: nextValue.month,
+                taken_day: nextValue.day,
+              }))
+            }
+          />
 
           <PhotoLocationEditor
             locationText={values.location_text}
@@ -298,6 +283,18 @@ export function CreatorPhotosPanel() {
               }))
             }
           />
+
+          <div className="auth-field">
+            <label htmlFor="display_name">Photo title</label>
+            <input
+              id="display_name"
+              name="display_name"
+              type="text"
+              value={values.display_name}
+              onChange={handleFieldChange}
+              required
+            />
+          </div>
 
           <div className="auth-field">
             <label htmlFor="description">Description</label>
@@ -341,13 +338,14 @@ export function CreatorPhotosPanel() {
               {token ? (
                 <PhotoImage
                   photoId={photo.id}
-                  alt={photo.description}
+                  alt={photo.display_name || photo.description || `Archive photo from ${photo.location_text}`}
                   className="photo-card__image"
                 />
               ) : null}
               <div className="photo-card__body">
                 <p className="photo-card__category">{photo.category.name}</p>
-                <h3>{photo.location_text}</h3>
+                <h3>{photo.display_name || photo.location_text}</h3>
+                <p className="photo-card__meta">{photo.location_text}</p>
                 {photo.description ? <p>{photo.description}</p> : null}
                 <p className="photo-card__meta">{formatPhotoDate(photo)}</p>
                 <Link href={`/photos/${photo.id}`} className="inline-link">

@@ -172,6 +172,30 @@ This endpoint is intended to support the future home-page and public archive exp
 
 This endpoint is public and does not require authentication.
 
+#### Query Parameters
+
+All query parameters are optional.
+
+- `query`: case-insensitive and accent-insensitive text search across photo `description`, `display_name`, `location_text`, and category `name` and `slug`,
+- `category`: exact category slug match,
+- `location`: case-insensitive and accent-insensitive token match on `location_text`,
+- `taken_year`: exact match on `taken_year`,
+- `taken_month`: exact match on `taken_month`; this parameter requires `taken_year`,
+- `date_from`: inclusive lower date bound in `YYYY`, `YYYY-MM`, or `YYYY-MM-DD` format,
+- `date_to`: inclusive upper date bound in `YYYY`, `YYYY-MM`, or `YYYY-MM-DD` format.
+
+#### Query Notes
+
+- `taken_year=1982` filters photos to that exact year,
+- `taken_year=1982&taken_month=1` filters photos to January 1982,
+- `date_from=2022&date_to=2024` filters photos to the inclusive 2022 through 2024 range,
+- `date_from=2026-03&date_to=2026-07` filters photos to the inclusive March 2026 through July 2026 range,
+- text search and location filtering ignore differences in case and Polish diacritics such as `Krakow` versus `Kraków`,
+- `location` matches all entered words, not only one exact phrase, so `skarbinskiego krakow` can match `Skarbińskiego 10, Kraków`,
+- date-range filtering is strict for partially known historical dates: a photo is returned only when its stored date precision is sufficient to place it fully inside the requested range,
+- a photo stored only with `taken_year=2026` may match a year-wide range for 2026, but it does not match a narrower range such as `2026-03` through `2026-07`,
+- `date_from` must not be later than `date_to`.
+
 #### Success Response
 
 Status:
@@ -190,6 +214,7 @@ Body:
       "owner_id": 1,
       "category_id": 1,
       "description": "Historic market square in winter.",
+      "display_name": "Winter market square",
       "location_text": "Rynek",
       "latitude": 50.061947,
       "longitude": 19.936856,
@@ -212,7 +237,39 @@ Body:
 #### Response Notes
 
 - the backend does not expose internal file storage references in shared archive responses,
-- the photo image must be retrieved through the dedicated image endpoint documented below.
+- the photo image must be retrieved through the dedicated image endpoint documented below,
+- `display_name` is the optional user-provided photo title and may be `null` for older records,
+- the response shape remains the same whether or not search and filters are applied.
+
+#### Error Responses
+
+`422 Unprocessable Entity`
+
+```json
+{
+  "detail": [
+    {
+      "loc": [],
+      "msg": "Value error, taken_month requires taken_year.",
+      "type": "value_error"
+    }
+  ]
+}
+```
+
+or
+
+```json
+{
+  "detail": [
+    {
+      "loc": [],
+      "msg": "Value error, date_from must be earlier than or equal to date_to.",
+      "type": "value_error"
+    }
+  ]
+}
+```
 
 ## Non-Public Endpoints
 
@@ -246,6 +303,7 @@ Fields:
 - `file`: required uploaded file,
 - `category_slug`: required string,
 - `description`: optional string,
+- `display_name`: optional string used as the human-facing photo title,
 - `location_text`: required string,
 - `latitude`: optional float,
 - `longitude`: optional float,
@@ -259,6 +317,7 @@ Example shape:
 file=<binary image>
 category_slug=ulica
 description=Historic market square in winter.
+display_name=Winter market square
 location_text=Rynek
 latitude=50.061947
 longitude=19.936856
@@ -272,6 +331,7 @@ taken_day=14
 - `file` is required,
 - `category_slug` is required and must match an existing backend photo category,
 - `description` may be empty,
+- `display_name` may be empty or omitted,
 - `location_text` is required,
 - `latitude` and `longitude` are optional and must be provided together when present,
 - `latitude`, if provided, must be between `-90` and `90`,
@@ -300,6 +360,7 @@ Body:
     "owner_id": 1,
     "category_id": 1,
     "description": "Historic market square in winter.",
+    "display_name": "Winter market square",
     "location_text": "Rynek",
     "latitude": 50.061947,
     "longitude": 19.936856,
@@ -430,6 +491,7 @@ Body:
       "owner_id": 1,
       "category_id": 1,
       "description": "Historic market square in winter.",
+      "display_name": "Winter market square",
       "location_text": "Rynek",
       "latitude": 50.061947,
       "longitude": 19.936856,
@@ -494,6 +556,7 @@ Body:
     "owner_id": 1,
     "category_id": 1,
     "description": "Historic market square in winter.",
+    "display_name": "Winter market square",
     "location_text": "Rynek",
     "latitude": 50.061947,
     "longitude": 19.936856,
@@ -595,6 +658,7 @@ Content-Type: application/json
 {
   "category_slug": "ulica",
   "description": "Historic market square after renovation.",
+  "display_name": "Winter market square",
   "location_text": "Rynek",
   "latitude": 50.061947,
   "longitude": 19.936856,
@@ -608,6 +672,7 @@ Content-Type: application/json
 
 - this first Sprint 3 edit flow covers metadata only,
 - `description` may be empty in this first version,
+- `display_name` is the optional user-provided photo title,
 - file replacement is out of scope for this endpoint,
 - the same validation rules used by photo creation apply to category, coordinate, and date fields,
 - sending both `latitude` and `longitude` as `null` clears stored coordinates while keeping `location_text`.
@@ -629,6 +694,7 @@ Body:
     "owner_id": 1,
     "category_id": 1,
     "description": "Historic market square after renovation.",
+    "display_name": "Winter market square",
     "location_text": "Rynek",
     "latitude": 50.061947,
     "longitude": 19.936856,
@@ -981,6 +1047,7 @@ Content-Type: application/json
 {
   "category_slug": "ulica",
   "description": "Corrected historical description.",
+  "display_name": "Corrected market square title",
   "location_text": "Rynek",
   "latitude": 50.061947,
   "longitude": 19.936856,
@@ -1007,6 +1074,7 @@ Body:
     "owner_id": 2,
     "category_id": 1,
     "description": "Corrected historical description.",
+    "display_name": "Corrected market square title",
     "location_text": "Rynek",
     "latitude": 50.061947,
     "longitude": 19.936856,

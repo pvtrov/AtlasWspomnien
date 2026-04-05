@@ -31,9 +31,15 @@ type Props = {
   pin?: MapCenter | null;
   preferFocusPoint?: boolean;
   editable?: boolean;
+  viewResetKey?: number;
   onSelectPoint?: (pointId: number | string) => void;
   onSetPin?: (coordinates: MapCenter) => void;
   emptyLabel: string;
+};
+
+type ManualView = {
+  center: MapCenter;
+  zoom: number;
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -43,6 +49,10 @@ function clamp(value: number, min: number, max: number): number {
 function wrapTileX(x: number, zoom: number): number {
   const tileCount = 2 ** zoom;
   return ((x % tileCount) + tileCount) % tileCount;
+}
+
+function normalizeLongitude(longitude: number): number {
+  return ((longitude + 180) % 360 + 360) % 360 - 180;
 }
 
 function latLngToWorld(latitude: number, longitude: number, zoom: number) {
@@ -112,15 +122,26 @@ export function SimplePhotoMap({
   pin = null,
   preferFocusPoint = false,
   editable = false,
+  viewResetKey = 0,
   onSelectPoint,
   onSetPin,
   emptyLabel,
 }: Props) {
   const mapRef = useRef<HTMLDivElement | null>(null);
+  const dragStateRef = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    startCenter: MapCenter;
+    moved: boolean;
+  } | null>(null);
+  const suppressClickRef = useRef(false);
   const [viewport, setViewport] = useState<ViewportSize>({
     width: 720,
     height: 420,
   });
+  const [manualView, setManualView] = useState<ManualView | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const element = mapRef.current;
@@ -144,6 +165,10 @@ export function SimplePhotoMap({
     return () => resizeObserver.disconnect();
   }, []);
 
+  useEffect(() => {
+    setManualView(null);
+  }, [viewResetKey]);
+
   const activePoints = useMemo(() => {
     if (pin) {
       return [pin];
@@ -157,7 +182,7 @@ export function SimplePhotoMap({
     [points, selectedPointId],
   );
 
-  const { center, zoom } = useMemo(() => {
+  const automaticView = useMemo(() => {
     const focusPoint = pin ?? (selectedPoint ? {
       latitude: selectedPoint.latitude,
       longitude: selectedPoint.longitude,
@@ -169,6 +194,9 @@ export function SimplePhotoMap({
 
     return deriveView(activePoints, viewport);
   }, [activePoints, pin, points.length, preferFocusPoint, selectedPoint, viewport]);
+
+  const center = manualView?.center ?? automaticView.center;
+  const zoom = manualView?.zoom ?? automaticView.zoom;
 
   const centerWorld = latLngToWorld(center.latitude, center.longitude, zoom);
   const topLeftX = centerWorld.x - viewport.width / 2;
@@ -195,7 +223,97 @@ export function SimplePhotoMap({
     }
   }
 
+  function setManualZoom(nextZoom: number): void {
+    const normalizedZoom = clamp(nextZoom, MIN_ZOOM, MAX_ZOOM);
+    setManualView({
+      center,
+      zoom: normalizedZoom,
+    });
+  }
+
+  function resetView(): void {
+    setManualView(null);
+  }
+
+  function handlePointerDown(event: React.PointerEvent<HTMLDivElement>): void {
+    if (!mapRef.current) {
+      return;
+    }
+
+    dragStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startCenter: center,
+      moved: false,
+    };
+    mapRef.current.setPointerCapture(event.pointerId);
+    setIsDragging(true);
+  }
+
+  function handlePointerMove(event: React.PointerEvent<HTMLDivElement>): void {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - dragState.startX;
+    const deltaY = event.clientY - dragState.startY;
+
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      dragState.moved = true;
+      suppressClickRef.current = true;
+    }
+
+    const startWorld = latLngToWorld(
+      dragState.startCenter.latitude,
+      dragState.startCenter.longitude,
+      zoom,
+    );
+    const nextCenter = worldToLatLng(startWorld.x - deltaX, startWorld.y - deltaY, zoom);
+
+    setManualView({
+      center: {
+        latitude: clamp(nextCenter.latitude, -85, 85),
+        longitude: normalizeLongitude(nextCenter.longitude),
+      },
+      zoom,
+    });
+  }
+
+  function handlePointerUp(event: React.PointerEvent<HTMLDivElement>): void {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    dragStateRef.current = null;
+    setIsDragging(false);
+    mapRef.current?.releasePointerCapture(event.pointerId);
+  }
+
+  function handlePointerCancel(event: React.PointerEvent<HTMLDivElement>): void {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    dragStateRef.current = null;
+    setIsDragging(false);
+  }
+
+  function handleWheel(event: React.WheelEvent<HTMLDivElement>): void {
+    event.preventDefault();
+    const zoomDelta = event.deltaY < 0 ? 1 : -1;
+    setManualZoom(zoom + zoomDelta);
+  }
+
   function handleMapClick(event: React.MouseEvent<HTMLDivElement>): void {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+
     if (!editable || !onSetPin || !mapRef.current) {
       return;
     }
@@ -217,11 +335,48 @@ export function SimplePhotoMap({
     <div className="photo-map">
       <div
         ref={mapRef}
-        className={`photo-map__viewport${editable ? " photo-map__viewport--editable" : ""}`}
+        className={`photo-map__viewport${editable ? " photo-map__viewport--editable" : ""}${
+          isDragging ? " photo-map__viewport--dragging" : ""
+        }`}
         onClick={handleMapClick}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+        onWheel={handleWheel}
         role={editable ? "application" : "img"}
         aria-label={emptyLabel}
       >
+        <div
+          className="photo-map__controls"
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
+          <button
+            type="button"
+            className="photo-map__control-button"
+            onClick={() => setManualZoom(zoom + 1)}
+            aria-label="Zoom in"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            className="photo-map__control-button"
+            onClick={() => setManualZoom(zoom - 1)}
+            aria-label="Zoom out"
+          >
+            -
+          </button>
+          <button
+            type="button"
+            className="photo-map__control-button photo-map__control-button--wide"
+            onClick={resetView}
+          >
+            Reset view
+          </button>
+        </div>
+
         {tiles.map((tile) => (
           <img
             key={tile.key}
@@ -255,6 +410,7 @@ export function SimplePhotoMap({
                 point.id === selectedPointId ? " photo-map__marker--selected" : ""
               }`}
               style={{ left, top }}
+              onPointerDown={(event) => event.stopPropagation()}
               onClick={(event) => {
                 event.stopPropagation();
                 onSelectPoint?.(point.id);

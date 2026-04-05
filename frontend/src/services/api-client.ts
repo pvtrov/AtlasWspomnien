@@ -35,6 +35,7 @@ export type Photo = {
   owner_id: number;
   category_id: number;
   description: string;
+  display_name: string | null;
   location_text: string;
   latitude: number | null;
   longitude: number | null;
@@ -84,6 +85,7 @@ export type PhotoUploadRequest = {
   file: File;
   category_slug: string;
   description: string;
+  display_name: string;
   location_text: string;
   latitude?: number;
   longitude?: number;
@@ -95,6 +97,7 @@ export type PhotoUploadRequest = {
 export type PhotoUpdateRequest = {
   category_slug: string;
   description: string;
+  display_name: string;
   location_text: string;
   latitude?: number | null;
   longitude?: number | null;
@@ -109,12 +112,28 @@ export type GeocodingResult = {
   label: string;
 };
 
+export type LocationSuggestion = {
+  latitude: number;
+  longitude: number;
+  label: string;
+};
+
 export type PhotoResponse = {
   photo: Photo;
 };
 
 export type PhotoListResponse = {
   photos: Photo[];
+};
+
+export type SharedPhotoFilters = {
+  query?: string;
+  category?: string;
+  location?: string;
+  taken_year?: number;
+  taken_month?: number;
+  date_from?: string;
+  date_to?: string;
 };
 
 export type BackendStatusResult = {
@@ -260,6 +279,7 @@ export async function uploadPhoto(
   formData.append("file", payload.file);
   formData.append("category_slug", payload.category_slug);
   formData.append("description", payload.description);
+  formData.append("display_name", payload.display_name);
   formData.append("location_text", payload.location_text);
   formData.append("taken_year", String(payload.taken_year));
 
@@ -309,8 +329,39 @@ export async function listOwnedPhotos(
   return payload.photos;
 }
 
-export async function listSharedPhotos(): Promise<Photo[]> {
-  const response = await fetch(buildApiUrl("/api/v1/photos"));
+export async function listSharedPhotos(filters: SharedPhotoFilters = {}): Promise<Photo[]> {
+  const searchParams = new URLSearchParams();
+
+  if (filters.query) {
+    searchParams.set("query", filters.query);
+  }
+
+  if (filters.category) {
+    searchParams.set("category", filters.category);
+  }
+
+  if (filters.location) {
+    searchParams.set("location", filters.location);
+  }
+
+  if (filters.taken_year !== undefined) {
+    searchParams.set("taken_year", String(filters.taken_year));
+  }
+
+  if (filters.taken_month !== undefined) {
+    searchParams.set("taken_month", String(filters.taken_month));
+  }
+
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+
+  const suffix = searchParams.size > 0 ? `?${searchParams.toString()}` : "";
+  const response = await fetch(buildApiUrl(`/api/v1/photos${suffix}`));
 
   if (!response.ok) {
     throw new Error(await readErrorMessage(response));
@@ -510,4 +561,42 @@ export async function geocodeLocation(
     longitude: Number(firstMatch.lon),
     label: firstMatch.display_name,
   };
+}
+
+export async function searchLocationSuggestions(
+  locationText: string,
+  limit = 5,
+): Promise<LocationSuggestion[]> {
+  const trimmedLocation = locationText.trim();
+
+  if (!trimmedLocation) {
+    return [];
+  }
+
+  const url = new URL("https://nominatim.openstreetmap.org/search");
+  url.searchParams.set("format", "jsonv2");
+  url.searchParams.set("limit", String(limit));
+  url.searchParams.set("q", trimmedLocation);
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Could not search location suggestions.");
+  }
+
+  const payload = (await response.json()) as Array<{
+    lat: string;
+    lon: string;
+    display_name: string;
+  }>;
+
+  return payload.map((item) => ({
+    latitude: Number(item.lat),
+    longitude: Number(item.lon),
+    label: item.display_name,
+  }));
 }

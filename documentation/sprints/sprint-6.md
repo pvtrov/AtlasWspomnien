@@ -68,6 +68,20 @@ Improve archive discovery by allowing users to search and filter across the shar
 - Keep the first search and filtering implementation practical and understandable.
 - Do not overbuild ranking or advanced search behavior in this sprint.
 
+#### Implemented In This Task
+
+- extended the public shared archive list endpoint with optional search and filter query parameters instead of adding a separate discovery endpoint,
+- added backend text search across photo `description`, `location_text`, and category `name` and `slug`,
+- extended backend text search so public archive `query` also matches the optional user-provided `display_name` photo title,
+- added backend filtering by category slug and location text,
+- added backend filtering by exact `taken_year` and `taken_month`,
+- added backend date-range filtering through inclusive `date_from` and `date_to` query parameters that accept `YYYY`, `YYYY-MM`, or `YYYY-MM-DD`,
+- made shared archive text search and location filtering accent-insensitive so searches such as `Krakow` can match `Kraków`,
+- kept date-range matching strict for partially known historical dates so narrow ranges do not return photos whose stored date precision is too broad,
+- added frontend search and filter controls directly into the existing shared archive browsing layer on the home page,
+- kept the current shared archive list, map, and inline-detail layout so filtering narrows the same browsing surface instead of introducing a redesigned discovery experience,
+- updated API documentation for the implemented search and filtering contract.
+
 ### 2. Map-Based Photo Discovery
 
 #### Goal
@@ -91,6 +105,8 @@ Allow users to discover photos through map-based interaction driven by more deta
 - added a database migration that keeps existing photos valid without coordinates,
 - extended backend create, update, and read contracts so coordinates flow through creator, administrator, and shared archive responses,
 - kept `location_text` as the required human-readable location field while allowing coordinate storage to remain optional,
+- separated the human-facing photo title into optional `display_name` while keeping `location_text` focused on the address or place description,
+- added OSM-based autocomplete in photo add and edit flows so selecting a suggestion fills both the location text and coordinates,
 - added creator and administrator location input that supports typed location text, frontend geocoding, direct pin placement, and coordinate clearing,
 - added a shared archive discovery layout on the home page with a photo list, a map for photos that have coordinates, and an inline detail panel,
 - kept the existing dedicated shared photo page as a fallback deep-link while making list selection and map-pin selection open details beside the map,

@@ -112,6 +112,7 @@ def update_photo_metadata(
         photo,
         category_id=category.id,
         description=payload.description.strip(),
+        display_name=payload.display_name.strip() if payload.display_name else None,
         location_text=payload.location_text.strip(),
         latitude=payload.latitude,
         longitude=payload.longitude,

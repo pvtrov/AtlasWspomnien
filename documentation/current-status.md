@@ -2,7 +2,7 @@
 
 ## Project State
 
-The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, Sprint 3 for its currently planned scope covering photo domain, photo organization, backend upload, and creator-facing photo management, Sprint 4 for its currently planned moderation foundation scope, Sprint 5 shared archive browsing and moderation-in-context scope, and the currently planned Sprint 6 map-based photo discovery scope.
+The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, Sprint 3 for its currently planned scope covering photo domain, photo organization, backend upload, and creator-facing photo management, Sprint 4 for its currently planned moderation foundation scope, Sprint 5 shared archive browsing and moderation-in-context scope, and the currently planned Sprint 6 scope for map-based discovery together with practical shared-archive search and filtering.
 
 The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
@@ -25,19 +25,23 @@ The repository now includes:
 - administrator visibility into shared backend photo listing and detail routes for moderation work,
 - public backend shared photo listing, detail, and image retrieval routes for archive browsing,
 - public backend shared photo reading now extended with optional photo coordinates,
+- public backend shared photo browsing now extended with practical text search and filtering by category, location text, and historical date fields,
 - blocked-creator restrictions that still allow login and viewing while preventing new uploads and metadata edits,
 - a backend bootstrap script for creating the first administrator account or promoting an existing user,
 - a backend health endpoint,
 - a protected backend auth route for current-user access,
 - a shared frontend archive browsing page on the home route with public photo detail pages,
 - a shared frontend archive discovery surface on the home route with a photo list, map-based browsing for coordinate-bearing photos, and inline photo details,
+- a shared frontend archive filter surface on the home route with collapsible search and filtering controls, exact/range date filtering, and active-filter summaries,
 - administrator-only moderation controls embedded into the shared frontend photo detail page,
 - a frontend redirect from `/all_photos` to the shared home-page archive listing,
+- photo metadata now separated into a human-facing optional `display_name` title and a required `location_text` location field,
+- creator and administrator photo forms now include OSM-based location suggestions that can fill both the location text and coordinates,
 - backend test coverage for the implemented administration and moderation behavior,
 - backend test coverage for the implemented shared archive browsing behavior,
-- project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, Sprint 3, Sprint 4 moderation scope, Sprint 5 shared browsing and moderation-in-context scope, and current Sprint 6 map-based photo discovery scope.
+- project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, Sprint 3, Sprint 4 moderation scope, Sprint 5 shared browsing and moderation-in-context scope, and current Sprint 6 map, search, and filtering scope.
 
-The current repository state now includes the shared archive browsing layer together with administrator moderation controls embedded into shared photo views and the first map-based discovery layer for photos with usable coordinates, and is ready for later Sprint 6 search and filtering refinements beyond the current implemented map scope.
+The current repository state now includes the shared archive browsing layer together with administrator moderation controls embedded into shared photo views, the first map-based discovery layer for photos with usable coordinates, and the first practical Sprint 6 search-and-filtering layer wired directly into the shared archive experience.
 
 ## Confirmed Decisions
 
@@ -71,7 +75,7 @@ The repository currently contains the main areas agreed for the project:
 
 ## Implemented Foundation So Far
 
-The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the Sprint 3 photo and creator-management scope, the Sprint 4 moderation foundation scope, the Sprint 5 shared browsing and moderation-in-context foundation, and the current Sprint 6 map-based discovery foundation:
+The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the Sprint 3 photo and creator-management scope, the Sprint 4 moderation foundation scope, the Sprint 5 shared browsing and moderation-in-context foundation, and the current Sprint 6 map, search, and filtering foundation:
 
 ### Backend
 
@@ -83,6 +87,7 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - JWT-based bearer-token authentication for Sprint 2,
 - an authenticated current-user route at `/api/v1/auth/me`,
 - public shared photo listing, detail, and image retrieval routes under `/api/v1/photos`,
+- public shared photo listing now supports practical archive `query`, `category`, `location`, `taken_year`, `taken_month`, `date_from`, and `date_to` filters,
 - an authenticated creator-only photo upload route at `/api/v1/photos`,
 - authenticated creator-owned photo listing, detail, metadata update, delete, and image retrieval routes under `/api/v1/photos`,
 - administrator visibility into backend photo list, detail, and image access for moderation work,
@@ -90,6 +95,7 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - blocked-creator backend rules that allow login and viewing but prevent upload and metadata update actions,
 - local filesystem photo storage handling for uploaded archive materials,
 - backend validation for Sprint 3 photo upload and edit fields, including optional empty descriptions,
+- backend search normalization that ignores case and Polish diacritics in both stored photo data and user-entered shared archive filters,
 - request-validation and upload-flow logging for easier debugging when creator photo requests fail,
 - a backend bootstrap script for creating the first administrator account or promoting an existing user,
 - backend auth tests alongside health, moderation, and admin bootstrap script coverage.
@@ -102,6 +108,7 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - a user persistence migration that creates the initial `users` table,
 - a photo persistence migration that creates the initial `photos` table,
 - a follow-up photo persistence migration that adds optional `latitude` and `longitude` fields,
+- a follow-up photo persistence migration that adds optional `display_name` for human-facing photo titles,
 - photo records now persisted together with local-storage file references after upload,
 - Docker-based automatic `alembic upgrade head` during backend startup,
 - database connectivity driven through `DATABASE_URL`.
@@ -120,9 +127,9 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - an initial persisted `Photo` model,
 - creator ownership through `owner_id` linked to `users.id`,
 - first-version photo metadata stored directly on the `photos` table,
-- photo metadata fields for `description`, `location_text`, optional `latitude`, optional `longitude`, `taken_year`, `taken_month`, and `taken_day`,
+- photo metadata fields for `description`, optional `display_name`, `location_text`, optional `latitude`, optional `longitude`, `taken_year`, `taken_month`, and `taken_day`,
 - a `file_reference` field now used to link persisted metadata with separately stored local photo files,
-- backend photo schemas for creation, upload validation, update, and read operations now extended to support optional coordinates,
+- backend photo schemas for creation, upload validation, update, and read operations now extended to support optional coordinates and optional `display_name`,
 - database indexes that support creator ownership and later date/location filtering work.
 
 ### Photo Organization
@@ -149,12 +156,14 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - a redirect from `/all_photos` back to the shared home-page archive listing,
 - a creator photo workspace at `/photos`,
 - a creator-owned photo detail view at `/photos/[photoId]`,
-- creator and administrator location input that supports typed place names, browser-side geocoding, direct pin placement, and coordinate clearing,
+- creator and administrator location input that supports typed place names, OSM-based suggestions, browser-side geocoding, direct pin placement, and coordinate clearing,
+- shared archive filters with collapsible search controls, exact/range date input, active-filter chips, and map reset behavior after filter application,
 - frontend upload, list, detail, edit, and delete flows aligned with the documented backend contract,
 - a basic administrator page for user listing and creator blocking,
 - photo rendering through a shared public image endpoint without exposing storage references in the UI,
 - frontend behavior that keeps non-admin users on the same shared photo detail layer without showing moderation controls,
-- a shared map view that shows only photos with usable coordinates and keeps the selected photo details visible beside the map on desktop layouts.
+- a shared map view that shows only photos with usable coordinates, supports pan/zoom/reset interaction, and keeps the selected photo details visible beside the map on desktop layouts,
+- photo cards and detail views that use `display_name` as the preferred title while still showing `location_text` as the location field.
 
 ### Local Development
 
@@ -172,10 +181,10 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 
 ## Next Recommended Step
 
-The next recommended implementation step is to continue Sprint 6 with the remaining search and filtering work that complements the now-implemented map-based discovery foundation.
+The next recommended implementation step is to build on the completed Sprint 6 archive-discovery surface with the next scoped product refinement that matters most after hands-on review.
 
-The most natural next product and implementation area is:
+The most natural next product areas are:
 
-- text search across the shared archive layer,
-- practical filtering by category, location text, and historical date,
-- refinement of the shared discovery UX around the combined list, filter, and map experience.
+- follow-up UX polish for shared archive discovery and location handling,
+- broader test execution once the local backend environment includes the documented Python dependencies,
+- the next approved sprint slice after confirming priorities in `documentation/sprints/sprint-6.md`.

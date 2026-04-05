@@ -39,16 +39,20 @@ export function SharedSelectedPhotoPanel({ photo }: Props) {
   return (
     <article className="photo-panel">
       <p className="eyebrow">Shared photo detail</p>
-      <h2>{photo.location_text}</h2>
+      <h2>{photo.display_name || photo.location_text}</h2>
       {photo.description ? <p className="lede">{photo.description}</p> : null}
 
       <PhotoImage
         photoId={photo.id}
-        alt={photo.description || `Archive photo from ${photo.location_text}`}
+        alt={photo.display_name || photo.description || `Archive photo from ${photo.location_text}`}
         className="photo-detail__image"
       />
 
       <dl className="photo-detail__meta">
+        <div>
+          <dt>Photo title</dt>
+          <dd>{photo.display_name || photo.location_text}</dd>
+        </div>
         <div>
           <dt>Category</dt>
           <dd>{photo.category.name}</dd>
@@ -58,7 +62,7 @@ export function SharedSelectedPhotoPanel({ photo }: Props) {
           <dd>{formatPhotoDate(photo)}</dd>
         </div>
         <div>
-          <dt>Location text</dt>
+          <dt>Location</dt>
           <dd>{photo.location_text}</dd>
         </div>
         {photo.latitude !== null && photo.longitude !== null ? (

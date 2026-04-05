@@ -5,6 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
+import {
+  createPartialDateValue,
+  PartialDateInput,
+} from "@/components/photos/partial-date-input";
 import { PhotoLocationEditor } from "@/components/photos/photo-location-editor";
 import { PhotoImage } from "@/components/photos/photo-image";
 import { PHOTO_CATEGORY_OPTIONS } from "@/lib/photo-categories";
@@ -18,6 +22,7 @@ import {
 type EditValues = {
   category_slug: string;
   description: string;
+  display_name: string;
   location_text: string;
   latitude: string;
   longitude: string;
@@ -32,6 +37,7 @@ function createEditValues(photo: Photo): EditValues {
   return {
     category_slug: photo.category.slug,
     description: photo.description,
+    display_name: photo.display_name ?? "",
     location_text: photo.location_text,
     latitude: photo.latitude !== null ? String(photo.latitude) : "",
     longitude: photo.longitude !== null ? String(photo.longitude) : "",
@@ -141,6 +147,7 @@ export function SharedPhotoDetailPanel() {
       const updatedPhoto = await updateAdminPhoto(token, photoId, {
         category_slug: values.category_slug,
         description: values.description.trim(),
+        display_name: values.display_name.trim(),
         location_text: values.location_text.trim(),
         ...buildUpdateCoordinates(values),
         taken_year: Number(values.taken_year),
@@ -203,16 +210,24 @@ export function SharedPhotoDetailPanel() {
     <section className="photo-detail-layout">
       <article className="photo-panel">
         <p className="eyebrow">Shared archive photo</p>
-        <h1>{photo.location_text}</h1>
+        <h1>{photo.display_name || photo.location_text}</h1>
         {photo.description ? <p className="lede">{photo.description}</p> : null}
 
         <PhotoImage
           photoId={photo.id}
-          alt={photo.description || `Archive photo from ${photo.location_text}`}
+          alt={photo.display_name || photo.description || `Archive photo from ${photo.location_text}`}
           className="photo-detail__image"
         />
 
         <dl className="photo-detail__meta">
+          <div>
+            <dt>Photo title</dt>
+            <dd>{photo.display_name || photo.location_text}</dd>
+          </div>
+          <div>
+            <dt>Location</dt>
+            <dd>{photo.location_text}</dd>
+          </div>
           <div>
             <dt>Category</dt>
             <dd>{photo.category.name}</dd>
@@ -285,40 +300,29 @@ export function SharedPhotoDetailPanel() {
                     ))}
                   </select>
                 </div>
-
-                <div className="auth-field">
-                  <label htmlFor="taken_year">Taken year</label>
-                  <input
-                    id="taken_year"
-                    name="taken_year"
-                    inputMode="numeric"
-                    value={values.taken_year}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="auth-field">
-                  <label htmlFor="taken_month">Taken month</label>
-                  <input
-                    id="taken_month"
-                    name="taken_month"
-                    inputMode="numeric"
-                    value={values.taken_month}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div className="auth-field">
-                  <label htmlFor="taken_day">Taken day</label>
-                  <input
-                    id="taken_day"
-                    name="taken_day"
-                    inputMode="numeric"
-                    value={values.taken_day}
-                    onChange={handleChange}
-                  />
-                </div>
               </div>
+
+              <PartialDateInput
+                legend="Photo date"
+                baseName="sharedEditDate"
+                value={createPartialDateValue(
+                  values.taken_year,
+                  values.taken_month,
+                  values.taken_day,
+                )}
+                onChange={(nextValue) =>
+                  setValues((currentValues) =>
+                    currentValues
+                      ? {
+                          ...currentValues,
+                          taken_year: nextValue.year,
+                          taken_month: nextValue.month,
+                          taken_day: nextValue.day,
+                        }
+                      : currentValues,
+                  )
+                }
+              />
 
               <PhotoLocationEditor
                 locationText={values.location_text}
@@ -342,6 +346,18 @@ export function SharedPhotoDetailPanel() {
                   )
                 }
               />
+
+              <div className="auth-field">
+                <label htmlFor="display_name">Photo title</label>
+                <input
+                  id="display_name"
+                  name="display_name"
+                  type="text"
+                  value={values.display_name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
               <div className="auth-field">
                 <label htmlFor="description">Description</label>
