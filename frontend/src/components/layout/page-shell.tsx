@@ -9,17 +9,17 @@ export function PageShell({ children }: PageShellProps) {
     <main className="page-shell">
       <header className="page-header">
         <div className="page-header__row">
-          <div className="brand" aria-label="AITSI project">
+          <div className="brand" aria-label="Atlas Wspomnień">
             <span className="brand-mark" aria-hidden="true" />
-            <span>AITSI Frontend</span>
+            <span>Atlas Wspomnień</span>
           </div>
 
-          <nav className="top-nav" aria-label="Primary">
-            <Link href="/">Home</Link>
-            <Link href="/photos">My photos</Link>
-            <Link href="/admin">Admin</Link>
-            <Link href="/login">Login</Link>
-            <Link href="/register">Register</Link>
+          <nav className="top-nav" aria-label="Główna nawigacja">
+            <Link href="/">Archiwum</Link>
+            <Link href="/photos">Moje zdjęcia</Link>
+            <Link href="/admin">Administracja</Link>
+            <Link href="/login">Logowanie</Link>
+            <Link href="/register">Rejestracja</Link>
           </nav>
         </div>
       </header>
