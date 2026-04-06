@@ -43,29 +43,29 @@ export function AuthForm({ mode }: AuthFormProps) {
     const nextErrors: FormErrors = {};
 
     if (isRegister && !nextValues.username.trim()) {
-      nextErrors.username = "Username is required.";
+      nextErrors.username = "Nazwa użytkownika jest wymagana.";
     }
 
     if (!nextValues.email.trim()) {
-      nextErrors.email = "Email is required.";
+      nextErrors.email = "Adres e-mail jest wymagany.";
     } else if (!emailPattern.test(nextValues.email.trim())) {
-      nextErrors.email = "Enter a valid email address.";
+      nextErrors.email = "Wpisz poprawny adres e-mail.";
     }
 
     if (!nextValues.password) {
-      nextErrors.password = "Password is required.";
+      nextErrors.password = "Hasło jest wymagane.";
     } else if (nextValues.password.length < 8) {
-      nextErrors.password = "Password must be at least 8 characters long.";
+      nextErrors.password = "Hasło musi mieć co najmniej 8 znaków.";
     }
 
     if (isRegister && !nextValues.confirmPassword) {
-      nextErrors.confirmPassword = "Please confirm your password.";
+      nextErrors.confirmPassword = "Potwierdź hasło.";
     } else if (
       isRegister &&
       nextValues.confirmPassword &&
       nextValues.password !== nextValues.confirmPassword
     ) {
-      nextErrors.confirmPassword = "Passwords must match.";
+      nextErrors.confirmPassword = "Hasła muszą być identyczne.";
     }
 
     return nextErrors;
@@ -92,7 +92,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      setSubmitMessage("Please correct the highlighted fields.");
+      setSubmitMessage("Popraw wyróżnione pola.");
       return;
     }
 
@@ -106,7 +106,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           password: values.password,
         });
         setSubmitMessage(
-          "Account created successfully. You can now log in with your email and password.",
+          "Konto zostało utworzone. Możesz teraz zalogować się adresem e-mail i hasłem.",
         );
         setValues(initialValues);
         router.push("/login");
@@ -115,7 +115,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           email: values.email.trim().toLowerCase(),
           password: values.password,
         });
-        setSubmitMessage(`Logged in as ${user.username}.`);
+        setSubmitMessage(`Zalogowano jako ${user.username}.`);
         router.push("/");
         router.refresh();
       }
@@ -123,7 +123,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       setSubmitMessage(
         error instanceof Error
           ? error.message
-          : "Authentication request failed.",
+          : "Żądanie uwierzytelnienia nie powiodło się.",
       );
     } finally {
       setIsSubmitting(false);
@@ -133,21 +133,21 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <section className="auth-panel" aria-labelledby={`${mode}-title`}>
       <div className="auth-panel__intro">
-        <p className="eyebrow">Sprint 2</p>
+        <p className="eyebrow">Atlas Wspomnień</p>
         <h1 id={`${mode}-title`}>
-          {isRegister ? "Create your creator account." : "Sign in to continue."}
+          {isRegister ? "Załóż konto twórcy." : "Zaloguj się, aby kontynuować."}
         </h1>
         <p className="lede">
           {isRegister
-            ? "Start with a simple registration form that prepares the frontend for the first creator authentication flow."
-            : "Use the initial login screen to enter your creator credentials once backend authentication is connected."}
+            ? "Załóż konto, aby dodawać zdjęcia, opisywać miejsca i budować wspólne archiwum."
+            : "Zaloguj się, aby zarządzać swoimi materiałami i korzystać z funkcji twórcy."}
         </p>
       </div>
 
       <form className="auth-form" noValidate onSubmit={handleSubmit}>
         {isRegister ? (
           <div className="auth-field">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username">Nazwa użytkownika</label>
             <input
               id="username"
               name="username"
@@ -167,7 +167,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         ) : null}
 
         <div className="auth-field">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">E-mail</label>
           <input
             id="email"
             name="email"
@@ -186,7 +186,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
 
         <div className="auth-field">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">Hasło</label>
           <input
             id="password"
             name="password"
@@ -206,7 +206,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
         {isRegister ? (
           <div className="auth-field">
-            <label htmlFor="confirmPassword">Confirm password</label>
+            <label htmlFor="confirmPassword">Powtórz hasło</label>
             <input
               id="confirmPassword"
               name="confirmPassword"
@@ -229,10 +229,10 @@ export function AuthForm({ mode }: AuthFormProps) {
 
         <button className="auth-form__submit" type="submit" disabled={isSubmitting}>
           {isSubmitting
-            ? "Working..."
+            ? "Trwa przetwarzanie..."
             : isRegister
-              ? "Create account"
-              : "Log in"}
+              ? "Utwórz konto"
+              : "Zaloguj się"}
         </button>
 
         <p className="auth-form__message" aria-live="polite">
@@ -240,9 +240,9 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
 
         <p className="auth-form__switch">
-          {isRegister ? "Already have an account?" : "Need an account?"}{" "}
+          {isRegister ? "Masz już konto?" : "Nie masz jeszcze konta?"}{" "}
           <Link href={isRegister ? "/login" : "/register"}>
-            {isRegister ? "Go to login" : "Create one here"}
+            {isRegister ? "Przejdź do logowania" : "Załóż je tutaj"}
           </Link>
         </p>
       </form>

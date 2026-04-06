@@ -2,7 +2,7 @@
 
 ## Project State
 
-The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, Sprint 3 for its currently planned scope covering photo domain, photo organization, backend upload, and creator-facing photo management, Sprint 4 for its currently planned moderation foundation scope, Sprint 5 shared archive browsing and moderation-in-context scope, and the currently planned Sprint 6 scope for map-based discovery together with practical shared-archive search and filtering.
+The project has completed Sprint 1 foundation work, Sprint 2 authentication foundation work, Sprint 3 for its currently planned scope covering photo domain, photo organization, backend upload, and creator-facing photo management, Sprint 4 for its currently planned moderation foundation scope, Sprint 5 shared archive browsing and moderation-in-context scope, Sprint 6 map-based discovery together with practical shared-archive search and filtering, and the currently planned Sprint 7 scope for public-facing polish, branding refinement, and core creator/admin UI refinement.
 
 The repository structure has been created, the core technology stack has been selected, Git workflow has been established, and Docker has been adopted as the primary local development environment.
 
@@ -37,11 +37,15 @@ The repository now includes:
 - a frontend redirect from `/all_photos` to the shared home-page archive listing,
 - photo metadata now separated into a human-facing optional `display_name` title and a required `location_text` location field,
 - creator and administrator photo forms now include OSM-based location suggestions that can fill both the location text and coordinates,
+- a Sprint 7 public archive visual refinement aligned with `Atlas Wspomnień` and the `Rose Dust` direction,
+- a calmer Sprint 7 creator workspace and administrator moderation workspace aligned more closely with the public archive presentation,
+- refined detailed photo views where the photo acts as the main visual anchor and can be opened in a larger overlay view,
+- a creator blocked-state frontend treatment that greys out only add/edit panels while still allowing blocked creators to browse their own photo list and detail presentation,
 - backend test coverage for the implemented administration and moderation behavior,
 - backend test coverage for the implemented shared archive browsing behavior,
-- project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, Sprint 3, Sprint 4 moderation scope, Sprint 5 shared browsing and moderation-in-context scope, and current Sprint 6 map, search, and filtering scope.
+- project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, Sprint 3, Sprint 4 moderation scope, Sprint 5 shared browsing and moderation-in-context scope, Sprint 6 map, search, and filtering scope, and current Sprint 7 polish work.
 
-The current repository state now includes the shared archive browsing layer together with administrator moderation controls embedded into shared photo views, the first map-based discovery layer for photos with usable coordinates, and the first practical Sprint 6 search-and-filtering layer wired directly into the shared archive experience.
+The current repository state now includes the shared archive browsing layer together with administrator moderation controls embedded into shared photo views, the first map-based discovery layer for photos with usable coordinates, practical Sprint 6 search-and-filtering wired directly into the shared archive experience, and a first substantial Sprint 7 polish pass across the public archive, creator workspaces, administrator moderation view, and detailed photo presentation.
 
 ## Confirmed Decisions
 
@@ -49,6 +53,7 @@ The current repository state now includes the shared archive browsing layer toge
 - High-level architecture: see [architecture.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/architecture.md)
 - Technology stack decision: see [001-technology-stack.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/decisions/001-technology-stack.md)
 - Photo storage strategy: see [002-photo-storage-strategy.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/decisions/002-photo-storage-strategy.md)
+- Branding direction, product name, and UI language direction: see [003-branding-direction.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/decisions/003-branding-direction.md)
 - Git branching strategy: see [git-workflow.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/git-workflow.md)
 - Local development setup and Docker usage: see [setup.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/setup.md)
 - MVP scope: see [mvp.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/product/mvp.md)
@@ -60,6 +65,7 @@ The current repository state now includes the shared archive browsing layer toge
 - Current implementation scope for Sprint 4: see [sprint-4.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-4.md)
 - Current implementation scope for Sprint 5: see [sprint-5.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-5.md)
 - Current implementation scope for Sprint 6: see [sprint-6.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-6.md)
+- Current implementation scope for Sprint 7: see [sprint-7.md](/Users/apatro/Repos/priv/PW/AITSI/documentation/sprints/sprint-7.md)
 
 ## Current Repository Structure
 
@@ -75,7 +81,7 @@ The repository currently contains the main areas agreed for the project:
 
 ## Implemented Foundation So Far
 
-The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the Sprint 3 photo and creator-management scope, the Sprint 4 moderation foundation scope, the Sprint 5 shared browsing and moderation-in-context foundation, and the current Sprint 6 map, search, and filtering foundation:
+The repository now includes the implemented Sprint 1 foundation, the Sprint 2 authentication foundation, the Sprint 3 photo and creator-management scope, the Sprint 4 moderation foundation scope, the Sprint 5 shared browsing and moderation-in-context foundation, Sprint 6 map, search, and filtering foundation, and the current Sprint 7 UI polish and branding refinement foundation:
 
 ### Backend
 
@@ -163,7 +169,12 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - photo rendering through a shared public image endpoint without exposing storage references in the UI,
 - frontend behavior that keeps non-admin users on the same shared photo detail layer without showing moderation controls,
 - a shared map view that shows only photos with usable coordinates, supports pan/zoom/reset interaction, and keeps the selected photo details visible beside the map on desktop layouts,
-- photo cards and detail views that use `display_name` as the preferred title while still showing `location_text` as the location field.
+- photo cards and detail views that use `display_name` as the preferred title while still showing `location_text` as the location field,
+- a public archive browsing layer visually refined around the `Atlas Wspomnień` branding and `Rose Dust` direction,
+- creator upload, owned-photo, and edit views with improved hierarchy, calmer spacing, and more product-consistent layout polish,
+- an administrator user-management page with improved readability and stronger visual consistency with the rest of the archive product,
+- detailed photo pages that emphasize the image more strongly, group metadata more clearly, and support click-to-enlarge image viewing,
+- blocked-creator frontend treatment that keeps owned-photo browsing available while disabling add/edit panels with a clear Polish-language status message.
 
 ### Local Development
 
@@ -181,10 +192,10 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 
 ## Next Recommended Step
 
-The next recommended implementation step is to build on the completed Sprint 6 archive-discovery surface with the next scoped product refinement that matters most after hands-on review.
+The most natural next implementation step after the current Sprint 7 polish work is to continue from the now-refined shared archive and authenticated workspace foundation into whichever post-Sprint-7 slice is prioritized next.
 
-The most natural next product areas are:
+The strongest current follow-up areas are:
 
-- follow-up UX polish for shared archive discovery and location handling,
-- broader test execution once the local backend environment includes the documented Python dependencies,
-- the next approved sprint slice after confirming priorities in `documentation/sprints/sprint-6.md`.
+- closing any remaining Polish-language and branding inconsistencies outside the already polished primary views,
+- targeted accessibility refinement across the newly polished public, creator, and administrator surfaces,
+- further archive discovery or moderation improvements built on the now more consistent shared detail and workspace layouts.

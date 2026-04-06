@@ -1,12 +1,12 @@
 :root {
-  --color-surface: #f4efe7;
-  --color-surface-alt: #d8c8b7;
-  --color-text: #1f1a17;
-  --color-text-soft: #4a4038;
-  --color-text-muted: #6a5b51;
-  --color-border: rgba(72, 52, 37, 0.15);
-  --color-accent: #bd7f4a;
-  --color-accent-strong: #8f4f1d;
+  --color-surface: #f3e9df;
+  --color-surface-alt: #e8d7cb;
+  --color-text: #2c1f1a;
+  --color-text-soft: #4c3f3a;
+  --color-text-muted: #6f5c56;
+  --color-border: rgba(94, 63, 99, 0.18);
+  --color-accent: #d89aa5;
+  --color-accent-strong: #7e5a7a;
   --font-body: "Segoe UI", "Helvetica Neue", sans-serif;
   --font-heading: "Georgia", "Times New Roman", serif;
 }
