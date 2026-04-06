@@ -108,6 +108,9 @@ Wprowadzić spójny kierunek produktu pod nazwą `Atlas Wspomnień` oraz przejś
 - dopracowano stronę administracyjnego zarządzania użytkownikami tak, aby lepiej wpisywała się w kierunek `Atlas Wspomnień` i `Rose Dust` bez zmiany dotychczasowej akcji blokady,
 - poprawiono zachowanie podpowiedzi lokalizacji tak, aby znikały po utracie aktywności pola wpisywania,
 - uporządkowano układ pól szerokości i długości geograficznej, aby były czytelniejsze i wizualnie równe,
+- dopracowano szczegółowe widoki zdjęcia tak, aby fotografia stała się wyraźniejszym punktem centralnym, metadane były lepiej pogrupowane, a sekcje edycji i moderacji mniej konkurowały z treścią archiwalną,
+- uproszczono publiczny widok szczegółów zdjęcia do jednej głównej kompozycji zamiast dwóch konkurujących paneli oraz dodano powiększanie zdjęcia po kliknięciu,
+- dodano czytelny stan zablokowanego twórcy w przestrzeni dodawania i edycji zdjęć, tak aby zamiast surowych błędów backendowych interfejs był wyszarzony i od razu komunikował konieczność kontaktu z administracją,
 - utrzymano istniejące funkcjonalności i przepływy twórcy oraz administratora bez zmian backendowych i bez dodawania nowych funkcji produktowych.
 
 ### 3. Documentation Updates

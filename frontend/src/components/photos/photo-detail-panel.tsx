@@ -87,7 +87,9 @@ export function PhotoDetailPanel() {
   const [message, setMessage] = useState("Ładowanie szczegółów zdjęcia...");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isImageExpanded, setIsImageExpanded] = useState(false);
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
+  const isBlocked = currentUser?.is_blocked ?? false;
 
   const token = useMemo(() => {
     if (typeof window === "undefined") {
@@ -143,6 +145,11 @@ export function PhotoDetailPanel() {
   async function handleSave(event: React.FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
 
+    if (isBlocked) {
+      setMessage("Jesteś zablokowany, skontaktuj się z administracją.");
+      return;
+    }
+
     if (!token || !values || Number.isNaN(photoId)) {
       setMessage("Zaloguj się ponownie przed zapisaniem zmian.");
       return;
@@ -174,6 +181,11 @@ export function PhotoDetailPanel() {
   }
 
   async function handleDelete(): Promise<void> {
+    if (isBlocked) {
+      setMessage("Jesteś zablokowany, skontaktuj się z administracją.");
+      return;
+    }
+
     if (!token || Number.isNaN(photoId)) {
       setMessage("Zaloguj się ponownie przed usunięciem tego zdjęcia.");
       return;
@@ -236,169 +248,227 @@ export function PhotoDetailPanel() {
 
   return (
     <section className="photo-detail-layout creator-detail-layout">
-      <article className="photo-panel creator-detail-layout__summary">
-        <p className="eyebrow">Zdjęcie twórcy</p>
-        <h1>{photo.display_name || photo.location_text}</h1>
-        {photo.description ? <p className="lede">{photo.description}</p> : null}
+      <article className="photo-panel creator-detail-layout__summary photo-story-panel">
+        <div className="photo-story-panel__header">
+          <div>
+            <p className="eyebrow">Zdjęcie twórcy</p>
+            <h1>{photo.display_name || photo.location_text}</h1>
+            {photo.description ? <p className="lede">{photo.description}</p> : null}
+          </div>
 
-        <PhotoImage
-          photoId={photo.id}
-          alt={photo.display_name || photo.description || `Zdjęcie archiwalne z lokalizacji ${photo.location_text}`}
-          className="photo-detail__image"
-        />
+          <Link href="/photos" className="inline-link">
+            Wróć do listy zdjęć
+          </Link>
+        </div>
 
-        <dl className="photo-detail__meta">
-          <div>
-            <dt>Tytuł zdjęcia</dt>
-            <dd>{photo.display_name || photo.location_text}</dd>
-          </div>
-          <div>
-            <dt>Lokalizacja</dt>
-            <dd>{photo.location_text}</dd>
-          </div>
-          <div>
-            <dt>Kategoria</dt>
-            <dd>{photo.category.name}</dd>
-          </div>
-          {photo.latitude !== null && photo.longitude !== null ? (
-            <div>
-              <dt>Współrzędne</dt>
-              <dd>
-                {photo.latitude.toFixed(6)}, {photo.longitude.toFixed(6)}
-              </dd>
-            </div>
-          ) : null}
-          <div>
-            <dt>Data wykonania</dt>
-            <dd>{formatPhotoDate(photo)}</dd>
-          </div>
-          <div>
-            <dt>Ostatnia aktualizacja</dt>
-            <dd>{new Date(photo.updated_at).toLocaleString()}</dd>
-          </div>
-        </dl>
-
-        <Link href="/photos" className="inline-link">
-          Wróć do listy zdjęć
-        </Link>
-      </article>
-
-      <article className="photo-panel creator-detail-layout__editor">
-        <div className="photo-panel__heading">
-          <div>
-            <p className="eyebrow">Edycja metadanych</p>
-            <h2>Zarządzanie zdjęciem</h2>
-          </div>
+        <div className="photo-story-panel__layout">
           <button
             type="button"
-            className="button button--danger"
-            onClick={handleDelete}
-            disabled={isDeleting}
+            className="photo-detail__image-button"
+            onClick={() => setIsImageExpanded(true)}
+            aria-label="Pokaż zdjęcie w dużym widoku"
           >
-            {isDeleting ? "Usuwanie..." : "Usuń zdjęcie"}
+            <PhotoImage
+              photoId={photo.id}
+              alt={photo.display_name || photo.description || `Zdjęcie archiwalne z lokalizacji ${photo.location_text}`}
+              className="photo-detail__image photo-detail__image--hero"
+            />
           </button>
         </div>
 
-        <form className="photo-form creator-photo-form" onSubmit={handleSave}>
-          <div className="creator-photo-form__primary">
-            <div className="auth-field">
-              <label htmlFor="display_name">Tytuł zdjęcia</label>
-              <input
-                id="display_name"
-                name="display_name"
-                type="text"
-                value={values.display_name}
-                onChange={handleChange}
-                required
-              />
-            </div>
+        <div className="photo-detail__sidebar photo-detail__sidebar--below">
+          <section className="photo-detail__meta-group">
+            <p className="eyebrow">Metadane podstawowe</p>
+            <dl className="photo-detail__meta">
+              <div>
+                <dt>Tytuł zdjęcia</dt>
+                <dd>{photo.display_name || photo.location_text}</dd>
+              </div>
+              <div>
+                <dt>Lokalizacja</dt>
+                <dd>{photo.location_text}</dd>
+              </div>
+              <div>
+                <dt>Kategoria</dt>
+                <dd>{photo.category.name}</dd>
+              </div>
+            </dl>
+          </section>
 
-            <div className="auth-field">
-              <label htmlFor="description">Opis</label>
-              <textarea
-                ref={descriptionRef}
-                id="description"
-                name="description"
-                rows={1}
-                className="auth-field__textarea--autogrow"
-                value={values.description}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          <div className="photo-form__grid">
-            <div className="auth-field">
-              <label htmlFor="category_slug">Kategoria</label>
-              <select
-                id="category_slug"
-                name="category_slug"
-                value={values.category_slug}
-                onChange={handleChange}
-              >
-                {PHOTO_CATEGORY_OPTIONS.map((option) => (
-                  <option key={option.slug} value={option.slug}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <PartialDateInput
-            legend="Data zdjęcia"
-            baseName="editDate"
-            value={createPartialDateValue(
-              values.taken_year,
-              values.taken_month,
-              values.taken_day,
-            )}
-            onChange={(nextValue) =>
-              setValues((currentValues) =>
-                currentValues
-                  ? {
-                      ...currentValues,
-                      taken_year: nextValue.year,
-                      taken_month: nextValue.month,
-                      taken_day: nextValue.day,
-                    }
-                  : currentValues,
-              )
-            }
-          />
-
-          <PhotoLocationEditor
-            locationText={values.location_text}
-            latitudeText={values.latitude}
-            longitudeText={values.longitude}
-            onLocationTextChange={(value) =>
-              setValues((currentValues) =>
-                currentValues
-                  ? { ...currentValues, location_text: value }
-                  : currentValues,
-              )
-            }
-            onLatitudeTextChange={(value) =>
-              setValues((currentValues) =>
-                currentValues ? { ...currentValues, latitude: value } : currentValues,
-              )
-            }
-            onLongitudeTextChange={(value) =>
-              setValues((currentValues) =>
-                currentValues ? { ...currentValues, longitude: value } : currentValues,
-              )
-            }
-          />
-
-          <button className="auth-form__submit" type="submit" disabled={isSaving}>
-            {isSaving ? "Zapisywanie..." : "Zapisz metadane"}
-          </button>
-        </form>
-
-        <p className="auth-form__message" aria-live="polite">
-          {message}
-        </p>
+          <section className="photo-detail__meta-group">
+            <p className="eyebrow">Kontekst archiwalny</p>
+            <dl className="photo-detail__meta">
+              <div>
+                <dt>Data wykonania</dt>
+                <dd>{formatPhotoDate(photo)}</dd>
+              </div>
+              {photo.latitude !== null && photo.longitude !== null ? (
+                <div>
+                  <dt>Współrzędne</dt>
+                  <dd>
+                    {photo.latitude.toFixed(6)}, {photo.longitude.toFixed(6)}
+                  </dd>
+                </div>
+              ) : null}
+              <div>
+                <dt>Ostatnia aktualizacja</dt>
+                <dd>{new Date(photo.updated_at).toLocaleString()}</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
       </article>
+
+      <div className={`creator-blocked-surface creator-blocked-surface--panel${isBlocked ? " creator-blocked-surface--inactive" : ""}`}>
+        <article className="photo-panel creator-detail-layout__editor">
+          <div className="photo-panel__heading">
+            <div>
+              <p className="eyebrow">Edycja metadanych</p>
+              <h2>Zarządzanie zdjęciem</h2>
+            </div>
+            <button
+              type="button"
+              className="button button--danger"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Usuwanie..." : "Usuń zdjęcie"}
+            </button>
+          </div>
+
+          <form className="photo-form creator-photo-form" onSubmit={handleSave}>
+            <div className="creator-photo-form__primary">
+              <div className="auth-field">
+                <label htmlFor="display_name">Tytuł zdjęcia</label>
+                <input
+                  id="display_name"
+                  name="display_name"
+                  type="text"
+                  value={values.display_name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="description">Opis</label>
+                <textarea
+                  ref={descriptionRef}
+                  id="description"
+                  name="description"
+                  rows={1}
+                  className="auth-field__textarea--autogrow"
+                  value={values.description}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div className="photo-form__grid">
+              <div className="auth-field">
+                <label htmlFor="category_slug">Kategoria</label>
+                <select
+                  id="category_slug"
+                  name="category_slug"
+                  value={values.category_slug}
+                  onChange={handleChange}
+                >
+                  {PHOTO_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.slug} value={option.slug}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <PartialDateInput
+              legend="Data zdjęcia"
+              baseName="editDate"
+              value={createPartialDateValue(
+                values.taken_year,
+                values.taken_month,
+                values.taken_day,
+              )}
+              onChange={(nextValue) =>
+                setValues((currentValues) =>
+                  currentValues
+                    ? {
+                        ...currentValues,
+                        taken_year: nextValue.year,
+                        taken_month: nextValue.month,
+                        taken_day: nextValue.day,
+                      }
+                    : currentValues,
+                )
+              }
+            />
+
+            <PhotoLocationEditor
+              locationText={values.location_text}
+              latitudeText={values.latitude}
+              longitudeText={values.longitude}
+              onLocationTextChange={(value) =>
+                setValues((currentValues) =>
+                  currentValues
+                    ? { ...currentValues, location_text: value }
+                    : currentValues,
+                )
+              }
+              onLatitudeTextChange={(value) =>
+                setValues((currentValues) =>
+                  currentValues ? { ...currentValues, latitude: value } : currentValues,
+                )
+              }
+              onLongitudeTextChange={(value) =>
+                setValues((currentValues) =>
+                  currentValues ? { ...currentValues, longitude: value } : currentValues,
+                )
+              }
+            />
+
+            <button className="auth-form__submit" type="submit" disabled={isSaving}>
+              {isSaving ? "Zapisywanie..." : "Zapisz metadane"}
+            </button>
+          </form>
+
+          <p className="auth-form__message" aria-live="polite">
+            {message}
+          </p>
+        </article>
+
+        {isBlocked ? (
+          <div className="creator-blocked-surface__overlay" role="status" aria-live="polite">
+            <p>Jesteś zablokowany, skontaktuj się z administracją.</p>
+          </div>
+        ) : null}
+      </div>
+
+      {isImageExpanded ? (
+        <div
+          className="photo-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Duży widok zdjęcia"
+          onClick={() => setIsImageExpanded(false)}
+        >
+          <button
+            type="button"
+            className="photo-lightbox__close"
+            onClick={() => setIsImageExpanded(false)}
+            aria-label="Zamknij duży widok zdjęcia"
+          >
+            Zamknij
+          </button>
+          <div className="photo-lightbox__content" onClick={(event) => event.stopPropagation()}>
+            <PhotoImage
+              photoId={photo.id}
+              alt={photo.display_name || photo.description || `Zdjęcie archiwalne z lokalizacji ${photo.location_text}`}
+              className="photo-lightbox__image"
+            />
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

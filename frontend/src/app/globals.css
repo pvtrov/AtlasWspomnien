@@ -724,6 +724,40 @@ a {
   max-height: 32rem;
 }
 
+.photo-detail__image--hero {
+  margin: 0;
+  max-height: min(72vh, 52rem);
+  box-shadow: 0 1.3rem 2.8rem rgba(38, 30, 24, 0.12);
+}
+
+.photo-detail__image-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.photo-detail__sidebar {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.photo-detail__sidebar--below {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.photo-detail__meta-group {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(126, 90, 122, 0.12);
+  border-radius: 1.2rem;
+  background: rgba(255, 255, 255, 0.68);
+}
+
 .photo-image--empty {
   display: grid;
   place-items: center;
@@ -779,10 +813,134 @@ a {
   margin: 0;
 }
 
+.photo-story-panel {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.photo-story-panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.photo-story-panel__layout {
+  display: grid;
+  gap: 1.35rem;
+  grid-template-columns: minmax(0, 1.5fr) minmax(18rem, 0.85fr);
+  align-items: start;
+}
+
+.photo-story-panel--public .photo-story-panel__layout {
+  grid-template-columns: minmax(0, 1.65fr) minmax(19rem, 0.8fr);
+}
+
+.photo-detail__supporting,
+.photo-detail__moderation {
+  display: grid;
+  gap: 0.9rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(126, 90, 122, 0.12);
+}
+
+.photo-detail__moderation {
+  margin-top: 0.25rem;
+}
+
+.photo-detail-layout--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: rgba(34, 24, 30, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.photo-lightbox__content {
+  position: relative;
+  width: min(100%, 84rem);
+  max-height: calc(100vh - 5rem);
+  display: grid;
+  place-items: center;
+}
+
+.photo-lightbox__image {
+  max-width: 100%;
+  max-height: calc(100vh - 7rem);
+  border-radius: 1.25rem;
+  box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.28);
+}
+
+.photo-lightbox__close {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .creator-workspace,
 .creator-detail-layout,
 .admin-polish-layout {
   gap: 1.75rem;
+}
+
+.creator-blocked-surface {
+  display: contents;
+}
+
+.creator-blocked-surface--panel {
+  position: relative;
+  display: block;
+}
+
+.creator-blocked-surface--inactive {
+  pointer-events: none;
+  user-select: none;
+}
+
+.creator-blocked-surface--inactive .photo-panel {
+  opacity: 0.32;
+  filter: grayscale(0.08);
+}
+
+.creator-blocked-surface__overlay {
+  position: absolute;
+  inset: 0 0 auto 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  min-height: 100%;
+}
+
+.creator-blocked-surface__overlay p {
+  margin: 0;
+  max-width: 26rem;
+  padding: 1.15rem 1.3rem;
+  border: 1px solid rgba(180, 73, 61, 0.16);
+  border-radius: 1.25rem;
+  background: rgba(255, 251, 250, 0.95);
+  color: #8b3e47;
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  line-height: 1.4;
+  text-align: center;
+  box-shadow: 0 1rem 2rem rgba(38, 30, 24, 0.1);
 }
 
 .creator-workspace__form-panel,
@@ -822,6 +980,12 @@ a {
 
 .creator-photo-card {
   background: rgba(255, 255, 255, 0.7);
+}
+
+.creator-workspace__form-panel,
+.creator-workspace__list-panel {
+  max-height: calc(100vh - 10rem);
+  overflow-y: auto;
 }
 
 .admin-polish-layout__detail-copy {
@@ -1193,6 +1357,15 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .photo-story-panel__header,
+  .photo-story-panel__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-story-panel__header {
+    justify-content: flex-start;
+  }
+
   .location-editor__coordinates {
     grid-template-columns: 1fr;
   }
@@ -1200,6 +1373,12 @@ a {
   .creator-detail-layout__summary {
     position: static;
     top: auto;
+  }
+
+  .creator-workspace__form-panel,
+  .creator-workspace__list-panel {
+    max-height: none;
+    overflow-y: visible;
   }
 
   .photo-workspace,

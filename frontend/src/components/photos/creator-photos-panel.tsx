@@ -82,6 +82,7 @@ export function CreatorPhotosPanel() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [values, setValues] = useState<UploadFormValues>(initialUploadValues);
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
+  const isBlocked = currentUser?.is_blocked ?? false;
 
   const token = useMemo(() => {
     if (typeof window === "undefined") {
@@ -147,6 +148,11 @@ export function CreatorPhotosPanel() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
+
+    if (isBlocked) {
+      setSubmitMessage("Jesteś zablokowany, skontaktuj się z administracją.");
+      return;
+    }
 
     if (!token) {
       setSubmitMessage("Zaloguj się, aby dodać zdjęcie.");
@@ -215,122 +221,130 @@ export function CreatorPhotosPanel() {
 
   return (
     <section className="photo-workspace creator-workspace">
-      <div className="photo-panel creator-workspace__form-panel">
-        <p className="eyebrow">Atlas Wspomnień</p>
-        <h1>Dodawaj i zarządzaj swoimi zdjęciami.</h1>
-        <p className="lede">
-          Dodaj zdjęcie archiwalne z wymaganymi metadanymi, a potem otwieraj jego szczegóły, aby je edytować lub usunąć.
-        </p>
+      <div className={`creator-blocked-surface creator-blocked-surface--panel${isBlocked ? " creator-blocked-surface--inactive" : ""}`}>
+        <div className="photo-panel creator-workspace__form-panel">
+          <p className="eyebrow">Atlas Wspomnień</p>
+          <h1>Dodawaj i zarządzaj swoimi zdjęciami.</h1>
+          <p className="lede">
+            Dodaj zdjęcie archiwalne z wymaganymi metadanymi, a potem otwieraj jego szczegóły, aby je edytować lub usunąć.
+          </p>
 
-        <form className="photo-form creator-photo-form" onSubmit={handleSubmit}>
-          <div className="creator-photo-form__primary">
+          <form className="photo-form creator-photo-form" onSubmit={handleSubmit}>
+            <div className="creator-photo-form__primary">
+              <div className="auth-field">
+                <label htmlFor="display_name">Tytuł zdjęcia</label>
+                <input
+                  id="display_name"
+                  name="display_name"
+                  type="text"
+                  value={values.display_name}
+                  onChange={handleFieldChange}
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="description">Opis</label>
+                <textarea
+                  ref={descriptionRef}
+                  id="description"
+                  name="description"
+                  rows={1}
+                  className="auth-field__textarea--autogrow"
+                  value={values.description}
+                  onChange={handleFieldChange}
+                />
+              </div>
+            </div>
+
             <div className="auth-field">
-              <label htmlFor="display_name">Tytuł zdjęcia</label>
+              <label htmlFor="file">Plik zdjęcia</label>
               <input
-                id="display_name"
-                name="display_name"
-                type="text"
-                value={values.display_name}
-                onChange={handleFieldChange}
-                required
+                id="file"
+                name="file"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
               />
             </div>
 
-            <div className="auth-field">
-              <label htmlFor="description">Opis</label>
-              <textarea
-                ref={descriptionRef}
-                id="description"
-                name="description"
-                rows={1}
-                className="auth-field__textarea--autogrow"
-                value={values.description}
-                onChange={handleFieldChange}
-              />
+            <div className="photo-form__grid">
+              <div className="auth-field">
+                <label htmlFor="category_slug">Kategoria</label>
+                <select
+                  id="category_slug"
+                  name="category_slug"
+                  value={values.category_slug}
+                  onChange={handleFieldChange}
+                >
+                  {PHOTO_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.slug} value={option.slug}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
 
-          <div className="auth-field">
-            <label htmlFor="file">Plik zdjęcia</label>
-            <input
-              id="file"
-              name="file"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
+            <PartialDateInput
+              legend="Data zdjęcia"
+              baseName="uploadDate"
+              value={createPartialDateValue(
+                values.taken_year,
+                values.taken_month,
+                values.taken_day,
+              )}
+              onChange={(nextValue) =>
+                setValues((currentValues) => ({
+                  ...currentValues,
+                  taken_year: nextValue.year,
+                  taken_month: nextValue.month,
+                  taken_day: nextValue.day,
+                }))
+              }
             />
-          </div>
 
-          <div className="photo-form__grid">
-            <div className="auth-field">
-              <label htmlFor="category_slug">Kategoria</label>
-              <select
-                id="category_slug"
-                name="category_slug"
-                value={values.category_slug}
-                onChange={handleFieldChange}
-              >
-                {PHOTO_CATEGORY_OPTIONS.map((option) => (
-                  <option key={option.slug} value={option.slug}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
+            <PhotoLocationEditor
+              locationText={values.location_text}
+              latitudeText={values.latitude}
+              longitudeText={values.longitude}
+              onLocationTextChange={(value) =>
+                setValues((currentValues) => ({
+                  ...currentValues,
+                  location_text: value,
+                }))
+              }
+              onLatitudeTextChange={(value) =>
+                setValues((currentValues) => ({
+                  ...currentValues,
+                  latitude: value,
+                }))
+              }
+              onLongitudeTextChange={(value) =>
+                setValues((currentValues) => ({
+                  ...currentValues,
+                  longitude: value,
+                }))
+              }
+            />
+
+            <div className="creator-photo-form__footer">
+              <button className="auth-form__submit" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Dodawanie..." : "Dodaj zdjęcie"}
+              </button>
+
+              <p className="auth-form__message" aria-live="polite">
+                {submitMessage}
+              </p>
             </div>
+          </form>
+        </div>
+
+        {isBlocked ? (
+          <div className="creator-blocked-surface__overlay" role="status" aria-live="polite">
+            <p>Jesteś zablokowany, skontaktuj się z administracją.</p>
           </div>
-
-          <PartialDateInput
-            legend="Data zdjęcia"
-            baseName="uploadDate"
-            value={createPartialDateValue(
-              values.taken_year,
-              values.taken_month,
-              values.taken_day,
-            )}
-            onChange={(nextValue) =>
-              setValues((currentValues) => ({
-                ...currentValues,
-                taken_year: nextValue.year,
-                taken_month: nextValue.month,
-                taken_day: nextValue.day,
-              }))
-            }
-          />
-
-          <PhotoLocationEditor
-            locationText={values.location_text}
-            latitudeText={values.latitude}
-            longitudeText={values.longitude}
-            onLocationTextChange={(value) =>
-              setValues((currentValues) => ({
-                ...currentValues,
-                location_text: value,
-              }))
-            }
-            onLatitudeTextChange={(value) =>
-              setValues((currentValues) => ({
-                ...currentValues,
-                latitude: value,
-              }))
-            }
-            onLongitudeTextChange={(value) =>
-              setValues((currentValues) => ({
-                ...currentValues,
-                longitude: value,
-              }))
-            }
-          />
-
-          <div className="creator-photo-form__footer">
-            <button className="auth-form__submit" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Dodawanie..." : "Dodaj zdjęcie"}
-            </button>
-
-            <p className="auth-form__message" aria-live="polite">
-              {submitMessage}
-            </p>
-          </div>
-        </form>
+        ) : null}
       </div>
 
       <section className="photo-panel creator-workspace__list-panel">
