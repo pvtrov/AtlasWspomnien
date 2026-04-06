@@ -101,6 +101,15 @@ Wprowadzić spójny kierunek produktu pod nazwą `Atlas Wspomnień` oraz przejś
 - Przetłumaczyć podstawowe widoczne teksty aplikacji na język polski.
 - Zachować istniejący układ aplikacji i potraktować zmianę jako kontrolowany refresh, nie pełny rebranding od zera.
 
+#### Implemented In This Task
+
+- dopracowano układ przestrzeni twórcy tak, aby formularz dodawania zdjęcia i lista własnych materiałów miały spokojniejszą hierarchię oraz spójniejszy rytm z publiczną warstwą archiwum,
+- uporządkowano stronę szczegółów i edycji zdjęcia twórcy, w tym ustawienie pola tytułu na górze oraz opisu bezpośrednio pod nim,
+- dopracowano stronę administracyjnego zarządzania użytkownikami tak, aby lepiej wpisywała się w kierunek `Atlas Wspomnień` i `Rose Dust` bez zmiany dotychczasowej akcji blokady,
+- poprawiono zachowanie podpowiedzi lokalizacji tak, aby znikały po utracie aktywności pola wpisywania,
+- uporządkowano układ pól szerokości i długości geograficznej, aby były czytelniejsze i wizualnie równe,
+- utrzymano istniejące funkcjonalności i przepływy twórcy oraz administratora bez zmian backendowych i bez dodawania nowych funkcji produktowych.
+
 ### 3. Documentation Updates
 
 #### Goal

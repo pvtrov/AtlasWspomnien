@@ -203,6 +203,12 @@ a {
   font: inherit;
 }
 
+.auth-field__textarea--autogrow {
+  min-height: 3.25rem;
+  resize: vertical;
+  overflow: hidden;
+}
+
 .auth-field input:focus {
   outline: 2px solid rgba(143, 79, 29, 0.24);
   outline-offset: 2px;
@@ -367,6 +373,25 @@ a {
 .photo-form {
   display: grid;
   gap: 1rem;
+}
+
+.creator-photo-form {
+  gap: 1.25rem;
+}
+
+.creator-photo-form__primary {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(126, 90, 122, 0.12);
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 250, 247, 0.62));
+}
+
+.creator-photo-form__footer {
+  display: grid;
+  gap: 0.75rem;
+  align-items: start;
 }
 
 .photo-form__grid {
@@ -556,6 +581,21 @@ a {
   gap: 1rem;
 }
 
+.location-editor__layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.location-editor__location-field {
+  position: relative;
+}
+
+.location-editor__coordinates {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .location-editor__hint {
   margin: 0;
   color: var(--color-text-soft);
@@ -567,6 +607,11 @@ a {
   display: grid;
   gap: 0.5rem;
   margin-top: 0.2rem;
+  padding: 0.5rem;
+  border: 1px solid rgba(126, 90, 122, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1rem 1.8rem rgba(38, 30, 24, 0.08);
 }
 
 .location-suggestions__item {
@@ -732,6 +777,55 @@ a {
 
 .photo-detail__meta dd {
   margin: 0;
+}
+
+.creator-workspace,
+.creator-detail-layout,
+.admin-polish-layout {
+  gap: 1.75rem;
+}
+
+.creator-workspace__form-panel,
+.creator-workspace__list-panel,
+.creator-detail-layout__summary,
+.creator-detail-layout__editor,
+.admin-polish-layout__list,
+.admin-polish-layout__detail {
+  position: relative;
+}
+
+.creator-workspace__form-panel::before,
+.creator-workspace__list-panel::before,
+.creator-detail-layout__summary::before,
+.creator-detail-layout__editor::before,
+.admin-polish-layout__list::before,
+.admin-polish-layout__detail::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 0.25rem;
+  border-radius: 1.5rem 1.5rem 0 0;
+  background: linear-gradient(90deg, rgba(216, 154, 165, 0.8), rgba(126, 90, 122, 0.5));
+  opacity: 0.75;
+}
+
+.creator-detail-layout__summary,
+.admin-polish-layout__detail {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(252, 247, 245, 0.8));
+}
+
+.creator-detail-layout__summary {
+  position: sticky;
+  top: 1.5rem;
+}
+
+.creator-photo-card {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.admin-polish-layout__detail-copy {
+  margin-bottom: 1rem;
 }
 
 .photo-map {
@@ -967,6 +1061,10 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 }
 
+.admin-user-list--polished {
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
 .admin-user-card {
   display: grid;
   gap: 0.45rem;
@@ -974,6 +1072,11 @@ a {
   border: 1px solid var(--color-border);
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.7);
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .admin-user-card--button {
@@ -984,9 +1087,19 @@ a {
   cursor: pointer;
 }
 
+.admin-user-card--button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(126, 90, 122, 0.24);
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: 0 0.9rem 1.7rem rgba(38, 30, 24, 0.08);
+}
+
 .admin-user-card--selected {
-  border-color: rgba(123, 67, 24, 0.45);
-  box-shadow: 0 0 0 0.15rem rgba(143, 79, 29, 0.12);
+  border-color: rgba(126, 90, 122, 0.38);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    0 0 0 0.15rem rgba(216, 154, 165, 0.18),
+    0 1rem 1.8rem rgba(38, 30, 24, 0.08);
 }
 
 .admin-user-card p {
@@ -1078,6 +1191,15 @@ a {
 
   .photo-card {
     grid-template-columns: 1fr;
+  }
+
+  .location-editor__coordinates {
+    grid-template-columns: 1fr;
+  }
+
+  .creator-detail-layout__summary {
+    position: static;
+    top: auto;
   }
 
   .photo-workspace,

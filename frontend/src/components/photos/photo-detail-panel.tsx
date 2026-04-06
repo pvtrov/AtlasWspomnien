@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -84,9 +84,10 @@ export function PhotoDetailPanel() {
   const { currentUser, status } = useAuth();
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [values, setValues] = useState<EditValues | null>(null);
-  const [message, setMessage] = useState("Loading photo details...");
+  const [message, setMessage] = useState("Ładowanie szczegółów zdjęcia...");
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
 
   const token = useMemo(() => {
     if (typeof window === "undefined") {
@@ -108,16 +109,26 @@ export function PhotoDetailPanel() {
         const loadedPhoto = await getCreatorPhoto(token, photoId);
         setPhoto(loadedPhoto);
         setValues(createEditValues(loadedPhoto));
-        setMessage("You can update the metadata or delete this photo.");
+        setMessage("Możesz zaktualizować metadane albo usunąć to zdjęcie.");
       } catch (error) {
         setMessage(
-          error instanceof Error ? error.message : "Could not load this photo.",
+          error instanceof Error ? error.message : "Nie udało się pobrać tego zdjęcia.",
         );
       }
     }
 
     void loadPhoto();
   }, [photoId, status, token]);
+
+  useEffect(() => {
+    const textarea = descriptionRef.current;
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.max(textarea.scrollHeight, 52)}px`;
+  }, [values?.description]);
 
   function handleChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -133,7 +144,7 @@ export function PhotoDetailPanel() {
     event.preventDefault();
 
     if (!token || !values || Number.isNaN(photoId)) {
-      setMessage("Please log in again before saving changes.");
+      setMessage("Zaloguj się ponownie przed zapisaniem zmian.");
       return;
     }
 
@@ -152,10 +163,10 @@ export function PhotoDetailPanel() {
       });
       setPhoto(updatedPhoto);
       setValues(createEditValues(updatedPhoto));
-      setMessage("Photo metadata updated successfully.");
+      setMessage("Metadane zdjęcia zostały zaktualizowane.");
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Photo update failed.",
+        error instanceof Error ? error.message : "Aktualizacja zdjęcia nie powiodła się.",
       );
     } finally {
       setIsSaving(false);
@@ -164,12 +175,12 @@ export function PhotoDetailPanel() {
 
   async function handleDelete(): Promise<void> {
     if (!token || Number.isNaN(photoId)) {
-      setMessage("Please log in again before deleting this photo.");
+      setMessage("Zaloguj się ponownie przed usunięciem tego zdjęcia.");
       return;
     }
 
     const confirmed = window.confirm(
-      "Delete this photo? This will remove the creator-owned record and stored file.",
+      "Usunąć to zdjęcie? Spowoduje to usunięcie rekordu twórcy i zapisanego pliku.",
     );
     if (!confirmed) {
       return;
@@ -183,7 +194,7 @@ export function PhotoDetailPanel() {
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Photo deletion failed.",
+        error instanceof Error ? error.message : "Usuwanie zdjęcia nie powiodło się.",
       );
       setIsDeleting(false);
     }
@@ -192,7 +203,7 @@ export function PhotoDetailPanel() {
   if (status === "loading") {
     return (
       <section className="photo-panel">
-        <p className="lede">Checking your creator session...</p>
+        <p className="lede">Sprawdzanie sesji twórcy...</p>
       </section>
     );
   }
@@ -201,12 +212,10 @@ export function PhotoDetailPanel() {
     return (
       <section className="photo-panel">
         <p className="eyebrow">Sprint 3</p>
-        <h1>Creator photo detail</h1>
-        <p className="lede">
-          Log in to open your photo detail view and manage your own uploads.
-        </p>
+        <h1>Szczegóły zdjęcia twórcy</h1>
+        <p className="lede">Zaloguj się, aby otworzyć szczegóły swojego zdjęcia i zarządzać własnymi materiałami.</p>
         <Link href="/login" className="inline-link">
-          Go to login
+          Przejdź do logowania
         </Link>
       </section>
     );
@@ -215,70 +224,70 @@ export function PhotoDetailPanel() {
   if (!photo || !values || Number.isNaN(photoId)) {
     return (
       <section className="photo-panel">
-        <p className="eyebrow">Creator photo</p>
-        <h1>Photo detail</h1>
+        <p className="eyebrow">Zdjęcie twórcy</p>
+        <h1>Szczegóły zdjęcia</h1>
         <p className="lede">{message}</p>
         <Link href="/photos" className="inline-link">
-          Back to photo list
+          Wróć do listy zdjęć
         </Link>
       </section>
     );
   }
 
   return (
-    <section className="photo-detail-layout">
-      <article className="photo-panel">
-        <p className="eyebrow">Creator photo</p>
+    <section className="photo-detail-layout creator-detail-layout">
+      <article className="photo-panel creator-detail-layout__summary">
+        <p className="eyebrow">Zdjęcie twórcy</p>
         <h1>{photo.display_name || photo.location_text}</h1>
         {photo.description ? <p className="lede">{photo.description}</p> : null}
 
         <PhotoImage
           photoId={photo.id}
-          alt={photo.display_name || photo.description || `Archive photo from ${photo.location_text}`}
+          alt={photo.display_name || photo.description || `Zdjęcie archiwalne z lokalizacji ${photo.location_text}`}
           className="photo-detail__image"
         />
 
         <dl className="photo-detail__meta">
           <div>
-            <dt>Photo title</dt>
+            <dt>Tytuł zdjęcia</dt>
             <dd>{photo.display_name || photo.location_text}</dd>
           </div>
           <div>
-            <dt>Location</dt>
+            <dt>Lokalizacja</dt>
             <dd>{photo.location_text}</dd>
           </div>
           <div>
-            <dt>Category</dt>
+            <dt>Kategoria</dt>
             <dd>{photo.category.name}</dd>
           </div>
           {photo.latitude !== null && photo.longitude !== null ? (
             <div>
-              <dt>Coordinates</dt>
+              <dt>Współrzędne</dt>
               <dd>
                 {photo.latitude.toFixed(6)}, {photo.longitude.toFixed(6)}
               </dd>
             </div>
           ) : null}
           <div>
-            <dt>Taken date</dt>
+            <dt>Data wykonania</dt>
             <dd>{formatPhotoDate(photo)}</dd>
           </div>
           <div>
-            <dt>Last updated</dt>
+            <dt>Ostatnia aktualizacja</dt>
             <dd>{new Date(photo.updated_at).toLocaleString()}</dd>
           </div>
         </dl>
 
         <Link href="/photos" className="inline-link">
-          Back to photo list
+          Wróć do listy zdjęć
         </Link>
       </article>
 
-      <article className="photo-panel">
+      <article className="photo-panel creator-detail-layout__editor">
         <div className="photo-panel__heading">
           <div>
-            <p className="eyebrow">Edit metadata</p>
-            <h2>First edit flow</h2>
+            <p className="eyebrow">Edycja metadanych</p>
+            <h2>Zarządzanie zdjęciem</h2>
           </div>
           <button
             type="button"
@@ -286,14 +295,41 @@ export function PhotoDetailPanel() {
             onClick={handleDelete}
             disabled={isDeleting}
           >
-            {isDeleting ? "Deleting..." : "Delete photo"}
+            {isDeleting ? "Usuwanie..." : "Usuń zdjęcie"}
           </button>
         </div>
 
-        <form className="photo-form" onSubmit={handleSave}>
+        <form className="photo-form creator-photo-form" onSubmit={handleSave}>
+          <div className="creator-photo-form__primary">
+            <div className="auth-field">
+              <label htmlFor="display_name">Tytuł zdjęcia</label>
+              <input
+                id="display_name"
+                name="display_name"
+                type="text"
+                value={values.display_name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="description">Opis</label>
+              <textarea
+                ref={descriptionRef}
+                id="description"
+                name="description"
+                rows={1}
+                className="auth-field__textarea--autogrow"
+                value={values.description}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
           <div className="photo-form__grid">
             <div className="auth-field">
-              <label htmlFor="category_slug">Category</label>
+              <label htmlFor="category_slug">Kategoria</label>
               <select
                 id="category_slug"
                 name="category_slug"
@@ -310,7 +346,7 @@ export function PhotoDetailPanel() {
           </div>
 
           <PartialDateInput
-            legend="Photo date"
+            legend="Data zdjęcia"
             baseName="editDate"
             value={createPartialDateValue(
               values.taken_year,
@@ -354,31 +390,8 @@ export function PhotoDetailPanel() {
             }
           />
 
-          <div className="auth-field">
-            <label htmlFor="display_name">Photo title</label>
-            <input
-              id="display_name"
-              name="display_name"
-              type="text"
-              value={values.display_name}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              rows={6}
-              value={values.description}
-              onChange={handleChange}
-            />
-          </div>
-
           <button className="auth-form__submit" type="submit" disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save metadata"}
+            {isSaving ? "Zapisywanie..." : "Zapisz metadane"}
           </button>
         </form>
 
