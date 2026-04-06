@@ -202,7 +202,7 @@ export function CreatorPhotosPanel() {
   if (!currentUser) {
     return (
       <section className="photo-panel">
-        <p className="eyebrow">Sprint 3</p>
+        <p className="eyebrow">Przestrzeń twórcy</p>
         <h1>Przestrzeń twórcy</h1>
         <p className="lede">
           Zaloguj się jako twórca, aby dodawać zdjęcia i zarządzać własnymi materiałami archiwalnymi.
@@ -333,7 +333,7 @@ export function CreatorPhotosPanel() {
                 {isSubmitting ? "Dodawanie..." : "Dodaj zdjęcie"}
               </button>
 
-              <p className="auth-form__message" aria-live="polite">
+              <p className="auth-form__message" aria-live="polite" role="status">
                 {submitMessage}
               </p>
             </div>

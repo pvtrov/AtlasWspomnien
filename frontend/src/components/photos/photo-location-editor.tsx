@@ -39,6 +39,10 @@ export function PhotoLocationEditor({
   const [selectedSuggestionLabel, setSelectedSuggestionLabel] = useState("");
   const [isLocationFieldActive, setIsLocationFieldActive] = useState(false);
   const locationFieldRef = useRef<HTMLDivElement | null>(null);
+  const suggestionListId = "location-suggestions-list";
+  const suggestionStatusId = "location-suggestions-status";
+  const locationHintId = "location-text-hint";
+  const locationMessageId = "location-editor-status";
 
   const hasCoordinates = latitudeText.trim() !== "" && longitudeText.trim() !== "";
   const pin = hasCoordinates
@@ -164,21 +168,35 @@ export function PhotoLocationEditor({
               setSelectedSuggestionLabel("");
               onLocationTextChange(event.target.value);
             }}
+            aria-autocomplete="list"
+            aria-expanded={suggestions.length > 0}
+            aria-controls={suggestions.length > 0 ? suggestionListId : undefined}
+            aria-describedby={`${locationHintId} ${suggestionStatusId}`}
           />
-          <p className="location-editor__hint">
+          <p id={locationHintId} className="location-editor__hint">
             Wybierz podpowiedź adresu, aby automatycznie uzupełnić tekst lokalizacji i współrzędne.
           </p>
-          {isSearchingSuggestions ? (
-            <p className="location-editor__hint">Wyszukiwanie podpowiedzi...</p>
-          ) : null}
+          <p id={suggestionStatusId} className="location-editor__hint" aria-live="polite">
+            {isSearchingSuggestions
+              ? "Wyszukiwanie podpowiedzi..."
+              : suggestions.length > 0
+                ? `Dostępne podpowiedzi: ${suggestions.length}.`
+                : "Brak aktywnych podpowiedzi."}
+          </p>
           {!isSearchingSuggestions && suggestions.length > 0 ? (
-            <div className="location-suggestions" role="listbox" aria-label="Podpowiedzi lokalizacji">
+            <div
+              id={suggestionListId}
+              className="location-suggestions"
+              role="list"
+              aria-label="Podpowiedzi lokalizacji"
+            >
               {suggestions.map((suggestion) => (
                 <button
                   key={`${suggestion.label}-${suggestion.latitude}-${suggestion.longitude}`}
                   type="button"
                   className="location-suggestions__item"
                   onClick={() => handleSuggestionSelect(suggestion)}
+                  aria-label={`Wybierz lokalizację ${suggestion.label}`}
                 >
                   {suggestion.label}
                 </button>
@@ -244,6 +262,7 @@ export function PhotoLocationEditor({
         pin={pin}
         preferFocusPoint
         editable
+        instructionsLabel="Strzałki przesuwają mapę, plus i minus zmieniają przybliżenie."
         onSetPin={(coordinates) => {
           onLatitudeTextChange(formatCoordinate(coordinates.latitude));
           onLongitudeTextChange(formatCoordinate(coordinates.longitude));
@@ -252,7 +271,7 @@ export function PhotoLocationEditor({
         emptyLabel="Kliknij, aby ustawić pinezkę lokalizacji dla tego zdjęcia."
       />
 
-      <p className="auth-form__message" aria-live="polite">
+      <p id={locationMessageId} className="auth-form__message" aria-live="polite" role="status">
         {message}
       </p>
     </section>

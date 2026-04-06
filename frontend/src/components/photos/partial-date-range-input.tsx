@@ -19,9 +19,9 @@ export type { PartialDateRangeValue };
 
 export function PartialDateRangeInput({ value, onChange }: Props) {
   return (
-    <div className="partial-date-range-input">
+    <div className="partial-date-range-input" role="group" aria-label="Zakres dat archiwalnych">
       <PartialDateInput
-        legend="Range start"
+        legend="Początek zakresu"
         baseName="rangeStart"
         value={value.from}
         onChange={(nextFrom) =>
@@ -33,7 +33,7 @@ export function PartialDateRangeInput({ value, onChange }: Props) {
       />
 
       <PartialDateInput
-        legend="Range end"
+        legend="Koniec zakresu"
         baseName="rangeEnd"
         value={value.to}
         onChange={(nextTo) =>
