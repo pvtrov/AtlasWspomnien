@@ -16,7 +16,7 @@ export function AdminUsersPanel() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [message, setMessage] = useState(
-    "Registered users for moderation will appear here.",
+    "W tym miejscu pojawią się zarejestrowani użytkownicy do przeglądu moderacyjnego.",
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
@@ -52,12 +52,12 @@ export function AdminUsersPanel() {
         });
         setMessage(
           loadedUsers.length > 0
-            ? "Select one registered user to review or block."
-            : "No registered users were returned by the moderation endpoint.",
+            ? "Wybierz użytkownika, aby sprawdzić jego stan lub go zablokować."
+            : "Endpoint moderacyjny nie zwrócił żadnych zarejestrowanych użytkowników.",
         );
       } catch (error) {
         setMessage(
-          error instanceof Error ? error.message : "Could not load users.",
+          error instanceof Error ? error.message : "Nie udało się pobrać użytkowników.",
         );
       } finally {
         setIsLoading(false);
@@ -80,23 +80,28 @@ export function AdminUsersPanel() {
       return;
     }
 
+    if (!token || !selectedUser) {
+      setMessage("Wybierz użytkownika przed wykonaniem akcji blokady.");
+      return;
+    }
+
     if (selectedUser.id === currentUser?.id) {
-      setMessage("You cannot block your own account.");
+      setMessage("Nie możesz zablokować własnego konta.");
       return;
     }
 
     if (selectedUser.role !== "creator") {
-      setMessage("Only creators can be blocked.");
+      setMessage("Blokować można tylko twórców.");
       return;
     }
 
     if (selectedUser.is_blocked) {
-      setMessage("This creator is already blocked.");
+      setMessage("Ten twórca jest już zablokowany.");
       return;
     }
 
     const confirmed = window.confirm(
-      `Block ${selectedUser.username} from future uploads and metadata edits?`,
+      `Zablokować użytkownika ${selectedUser.username} przed kolejnymi dodaniami i edycją metadanych?`,
     );
     if (!confirmed) {
       return;
@@ -109,10 +114,10 @@ export function AdminUsersPanel() {
       setUsers((currentUsers) =>
         currentUsers.map((user) => (user.id === blockedUser.id ? blockedUser : user)),
       );
-      setMessage(`Creator ${blockedUser.username} has been blocked.`);
+      setMessage(`Twórca ${blockedUser.username} został zablokowany.`);
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Blocking the creator failed.",
+        error instanceof Error ? error.message : "Nie udało się zablokować twórcy.",
       );
     } finally {
       setIsBlocking(false);
@@ -122,7 +127,7 @@ export function AdminUsersPanel() {
   if (status === "loading") {
     return (
       <section className="photo-panel">
-        <p className="lede">Checking your administrator session...</p>
+        <p className="lede">Sprawdzanie sesji administratora...</p>
       </section>
     );
   }
@@ -131,10 +136,9 @@ export function AdminUsersPanel() {
     return (
       <section className="photo-panel">
         <p className="eyebrow">Sprint 4</p>
-        <h1>Administrator users</h1>
+        <h1>Użytkownicy administracyjne</h1>
         <p className="lede">
-          Log in with an administrator account to review registered users and
-          block creators when needed.
+          Zaloguj się kontem administratora, aby przeglądać użytkowników i blokować twórców w razie potrzeby.
         </p>
       </section>
     );
@@ -144,26 +148,24 @@ export function AdminUsersPanel() {
     return (
       <section className="photo-panel">
         <p className="eyebrow">Sprint 4</p>
-        <h1>Administrator users</h1>
-        <p className="lede">
-          Administrator access is required for this moderation area.
-        </p>
+        <h1>Użytkownicy administracyjne</h1>
+        <p className="lede">Dostęp administratora jest wymagany, aby wejść do tej strefy moderacji.</p>
       </section>
     );
   }
 
   return (
-    <section className="admin-workspace">
-      <article className="photo-panel">
+    <section className="admin-workspace admin-polish-layout">
+      <article className="photo-panel admin-polish-layout__list">
         <div className="photo-panel__heading">
           <div>
-            <p className="eyebrow">Registered users</p>
-            <h1>All users</h1>
+            <p className="eyebrow">Atlas Wspomnień</p>
+            <h1>Moderacja użytkowników</h1>
           </div>
           <p className="photo-panel__meta">
             {users.length > 0
-              ? `${users.length} registered user${users.length === 1 ? "" : "s"}`
-              : "No users loaded."}
+              ? `${users.length} ${users.length === 1 ? "użytkownik" : "użytkowników"}`
+              : "Nie wczytano użytkowników."}
           </p>
         </div>
 
@@ -171,14 +173,14 @@ export function AdminUsersPanel() {
           {message}
         </p>
 
-        {isLoading ? <p>Loading users...</p> : null}
+        {isLoading ? <p>Ładowanie użytkowników...</p> : null}
 
         {users.length === 0 ? (
           <p className="photo-list__empty">
-            User records will appear here when the admin endpoint returns them.
+            Rekordy użytkowników pojawią się tutaj, gdy zwróci je endpoint administracyjny.
           </p>
         ) : (
-          <div className="admin-user-list">
+          <div className="admin-user-list admin-user-list--polished">
             {users.map((user) => (
               <button
                 key={user.id}
@@ -195,31 +197,31 @@ export function AdminUsersPanel() {
                       user.is_blocked ? " admin-user-badge--blocked" : ""
                     }`}
                   >
-                    {user.is_blocked ? "Blocked" : "Active"}
+                    {user.is_blocked ? "Zablokowany" : "Aktywny"}
                   </span>
                 </div>
                 <p>{user.email}</p>
-                <p>Role: {user.role}</p>
+                <p>Rola: {user.role}</p>
               </button>
             ))}
           </div>
         )}
       </article>
 
-      <article className="photo-panel">
+      <article className="photo-panel admin-polish-layout__detail">
         {!selectedUser ? (
           <>
-            <p className="eyebrow">User detail</p>
-            <h2>Select a user</h2>
+            <p className="eyebrow">Szczegóły użytkownika</p>
+            <h2>Wybierz użytkownika</h2>
             <p className="lede">
-              Choose one registered user to inspect their role and blocking status.
+              Wybierz zarejestrowanego użytkownika, aby sprawdzić jego rolę i status blokady.
             </p>
           </>
         ) : (
           <>
             <div className="photo-panel__heading">
               <div>
-                <p className="eyebrow">User detail</p>
+                <p className="eyebrow">Szczegóły użytkownika</p>
                 <h2>{selectedUser.username}</h2>
               </div>
               <button
@@ -234,31 +236,36 @@ export function AdminUsersPanel() {
                 }
               >
                 {isBlocking
-                  ? "Blocking..."
+                  ? "Blokowanie..."
                   : isSelfSelected
-                    ? "Cannot block yourself"
+                    ? "Nie możesz zablokować siebie"
                   : selectedUser.is_blocked
-                    ? "Creator blocked"
-                    : "Block creator"}
+                    ? "Twórca zablokowany"
+                    : "Zablokuj twórcę"}
               </button>
             </div>
 
+            <p className="photo-panel__meta admin-polish-layout__detail-copy">
+              Ta sekcja zachowuje obecny przepływ moderacji, ale porządkuje najważniejsze informacje
+              o użytkowniku i akcję blokady w spokojniejszej hierarchii.
+            </p>
+
             <dl className="photo-detail__meta">
               <div>
-                <dt>User id</dt>
+                <dt>ID użytkownika</dt>
                 <dd>{selectedUser.id}</dd>
               </div>
               <div>
-                <dt>Email</dt>
+                <dt>E-mail</dt>
                 <dd>{selectedUser.email}</dd>
               </div>
               <div>
-                <dt>Role</dt>
+                <dt>Rola</dt>
                 <dd>{selectedUser.role}</dd>
               </div>
               <div>
                 <dt>Status</dt>
-                <dd>{selectedUser.is_blocked ? "Blocked" : "Active"}</dd>
+                <dd>{selectedUser.is_blocked ? "Zablokowany" : "Aktywny"}</dd>
               </div>
             </dl>
           </>

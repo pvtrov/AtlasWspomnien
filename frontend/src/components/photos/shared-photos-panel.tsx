@@ -151,21 +151,21 @@ function buildFilterSummary(filters: SharedPhotoFilters): FilterSummaryItem[] {
   if (filters.query) {
     items.push({
       key: "query",
-      label: `Query: ${filters.query}`,
+      label: `Fraza: ${filters.query}`,
     });
   }
 
   if (filters.category) {
     items.push({
       key: "category",
-      label: `Category: ${filters.category}`,
+      label: `Kategoria: ${filters.category}`,
     });
   }
 
   if (filters.location) {
     items.push({
       key: "location",
-      label: `Location: ${filters.location}`,
+      label: `Lokalizacja: ${filters.location}`,
     });
   }
 
@@ -174,13 +174,13 @@ function buildFilterSummary(filters: SharedPhotoFilters): FilterSummaryItem[] {
       key: "exact-date",
       label:
         filters.taken_month !== undefined
-          ? `Exact date: ${filters.taken_year}-${String(filters.taken_month).padStart(2, "0")}`
-          : `Exact date: ${filters.taken_year}`,
+          ? `Dokładna data: ${filters.taken_year}-${String(filters.taken_month).padStart(2, "0")}`
+          : `Dokładna data: ${filters.taken_year}`,
     });
   } else if (filters.date_from || filters.date_to) {
     items.push({
       key: "range-date",
-      label: `Range: ${filters.date_from ?? "..." } -> ${filters.date_to ?? "..."}`,
+      label: `Zakres: ${filters.date_from ?? "..." } -> ${filters.date_to ?? "..."}`,
     });
   }
 
@@ -191,7 +191,7 @@ export function SharedPhotosPanel() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [selectedPhotoId, setSelectedPhotoId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [message, setMessage] = useState("Loading archive photos...");
+  const [message, setMessage] = useState("Ładowanie zdjęć archiwalnych...");
   const [filterValues, setFilterValues] = useState<FilterFormValues>(INITIAL_FILTERS);
   const [appliedFilters, setAppliedFilters] = useState<SharedPhotoFilters>({});
   const [mapViewResetKey, setMapViewResetKey] = useState(0);
@@ -219,16 +219,16 @@ export function SharedPhotosPanel() {
         });
         setMessage(
           loadedPhotos.length > 0
-            ? "Browse the shared archive through one list, one map, and one inline detail panel."
+            ? "Przeglądaj wspólne archiwum przez jedną listę, jedną mapę i jeden panel szczegółów."
             : Object.keys(appliedFilters).length > 0
-              ? "No archive photos match the current filters."
-              : "No archive photos are available yet.",
+              ? "Żadne zdjęcia nie pasują do obecnych filtrów."
+              : "W archiwum nie ma jeszcze dostępnych zdjęć.",
         );
       } catch (error) {
         setPhotos([]);
         setSelectedPhotoId(null);
         setMessage(
-          error instanceof Error ? error.message : "Could not load archive photos.",
+          error instanceof Error ? error.message : "Nie udało się pobrać zdjęć archiwalnych.",
         );
       } finally {
         setIsLoading(false);
@@ -264,71 +264,74 @@ export function SharedPhotosPanel() {
     (photo) => photo.latitude !== null && photo.longitude !== null,
   );
   const hasActiveFilters = Object.keys(appliedFilters).length > 0;
-  const activeFiltersLabel = hasActiveFilters ? "Filters active" : "No filters applied";
+  const activeFiltersLabel = hasActiveFilters ? "Filtry aktywne" : "Brak aktywnych filtrów";
   const filterSummaryItems = buildFilterSummary(appliedFilters);
+  const selectedPhotoHasMapCoordinates =
+    selectedPhoto?.latitude !== null && selectedPhoto?.longitude !== null;
 
   return (
-    <section className="photo-panel">
-      <div className="photo-panel__heading">
-        <div>
-          <p className="eyebrow">Sprint 6</p>
-          <h1>Archive search and filtering</h1>
-        </div>
-        <p className="photo-panel__meta">{message}</p>
-      </div>
-
+    <section className="archive-shell">
       <div className="photo-filters-shell">
-        <div className="photo-panel__heading photo-panel__heading--compact">
+        <div className="photo-filters-shell__intro">
           <div>
-            <p className="eyebrow">Search and filters</p>
-            <h2>Refine archive discovery</h2>
-            <div className="photo-filter-summary" aria-live="polite">
-              {filterSummaryItems.length > 0 ? (
-                filterSummaryItems.map((item) => (
-                  <span key={item.key} className="photo-filter-summary__item">
-                    {item.label}
-                  </span>
-                ))
-              ) : (
-                <span className="photo-filter-summary__empty">No filters applied.</span>
-              )}
-            </div>
+            <p className="eyebrow">Atlas Wspomnień</p>
+            <h1>Odkrywaj archiwum</h1>
+            <p className="photo-panel__meta">
+              {message}
+            </p>
           </div>
           <div className="photo-filters-shell__actions">
-            <p className="photo-panel__meta">{activeFiltersLabel}</p>
+            <span className="photo-filters-shell__status">{activeFiltersLabel}</span>
             <button
               type="button"
               className="button button--secondary"
               onClick={() => setAreFiltersExpanded((currentValue) => !currentValue)}
             >
-              {areFiltersExpanded ? "Hide filters" : "Show filters"}
+              {areFiltersExpanded ? "Ukryj filtry" : "Pokaż filtry"}
             </button>
           </div>
         </div>
+
+        <div className="photo-filter-summary" aria-live="polite">
+          {filterSummaryItems.length > 0 ? (
+            filterSummaryItems.map((item) => (
+              <span key={item.key} className="photo-filter-summary__item">
+                {item.label}
+              </span>
+            ))
+          ) : (
+            <span className="photo-filter-summary__empty">Brak aktywnych filtrów.</span>
+          )}
+        </div>
+
+        <p className="photo-filters-shell__caption">
+          Filtry porządkują ten sam wspólny widok archiwum, dzięki czemu lista, mapa i detal
+          reagują razem.
+        </p>
 
         {areFiltersExpanded ? (
           <form className="photo-filters" onSubmit={handleApplyFilters}>
             <div className="photo-filters__grid">
               <div className="auth-field">
-                <label htmlFor="query">Search text</label>
+                <label htmlFor="query">Szukana fraza</label>
                 <input
                   id="query"
                   name="query"
                   value={filterValues.query}
                   onChange={handleFilterChange}
-                  placeholder="Description, location, or category"
+                  placeholder="Opis, lokalizacja albo kategoria"
                 />
               </div>
 
               <div className="auth-field">
-                <label htmlFor="category">Category</label>
+                <label htmlFor="category">Kategoria</label>
                 <select
                   id="category"
                   name="category"
                   value={filterValues.category}
                   onChange={handleFilterChange}
                 >
-                  <option value="">All categories</option>
+                  <option value="">Wszystkie kategorie</option>
                   {PHOTO_CATEGORY_OPTIONS.map((option) => (
                     <option key={option.slug} value={option.slug}>
                       {option.name}
@@ -338,19 +341,19 @@ export function SharedPhotosPanel() {
               </div>
 
               <div className="auth-field">
-                <label htmlFor="location">Location text</label>
+                <label htmlFor="location">Tekst lokalizacji</label>
                 <input
                   id="location"
                   name="location"
                   value={filterValues.location}
                   onChange={handleFilterChange}
-                  placeholder="Town square, district, street..."
+                  placeholder="Rynek, dzielnica, ulica..."
                 />
               </div>
             </div>
 
             <div className="photo-filters__date-mode">
-              <span className="photo-filters__section-label">Date mode</span>
+              <span className="photo-filters__section-label">Tryb daty</span>
               <div className="photo-filters__toggle">
                 <button
                   type="button"
@@ -359,7 +362,7 @@ export function SharedPhotosPanel() {
                   }`}
                   onClick={() => setDateFilterMode("exact")}
                 >
-                  Exact date
+                  Dokładna data
                 </button>
                 <button
                   type="button"
@@ -368,7 +371,7 @@ export function SharedPhotosPanel() {
                   }`}
                   onClick={() => setDateFilterMode("range")}
                 >
-                  Range
+                  Zakres
                 </button>
               </div>
             </div>
@@ -376,11 +379,11 @@ export function SharedPhotosPanel() {
             <div className="photo-filters__date-layout">
               {dateFilterMode === "exact" ? (
                 <PartialDateInput
-                  legend="Exact archive date"
+                  legend="Dokładna data archiwalna"
                   baseName="exactDate"
-                  yearLabel="Year"
-                  monthLabel="Month"
-                  dayLabel="Day"
+                  yearLabel="Rok"
+                  monthLabel="Miesiąc"
+                  dayLabel="Dzień"
                   value={filterValues.exactDate}
                   onChange={(nextValue) =>
                     setFilterValues((currentValues) => ({
@@ -404,7 +407,7 @@ export function SharedPhotosPanel() {
 
             <div className="photo-panel__actions">
               <button type="submit" className="auth-form__submit" disabled={isLoading}>
-                {isLoading ? "Loading..." : "Apply filters"}
+                {isLoading ? "Ładowanie..." : "Zastosuj filtry"}
               </button>
               <button
                 type="button"
@@ -412,7 +415,7 @@ export function SharedPhotosPanel() {
                 onClick={handleResetFilters}
                 disabled={isLoading}
               >
-                Clear filters
+                Wyczyść filtry
               </button>
             </div>
           </form>
@@ -422,21 +425,21 @@ export function SharedPhotosPanel() {
       {!isLoading && photos.length === 0 ? (
         <p className="photo-list__empty">
           {hasActiveFilters
-            ? "No archive photos match the current filters."
-            : "Archive browsing will appear here once photos are available."}
+            ? "Żadne zdjęcia nie pasują do obecnych filtrów."
+            : "Przeglądanie archiwum pojawi się tutaj, gdy zdjęcia będą dostępne."}
         </p>
       ) : null}
 
       <div className="archive-discovery-layout">
         <section className="archive-discovery-main">
-          <article className="photo-panel">
+          <article className="photo-panel archive-collection-panel">
             <div className="photo-panel__heading">
               <div>
-                <p className="eyebrow">Archive list</p>
-                <h2>Browse matching photos</h2>
+                <p className="eyebrow">Lista archiwum</p>
+                <h2>Przeglądaj pasujące zdjęcia</h2>
               </div>
               <p className="photo-panel__meta">
-                Selecting a list item opens its details on the right.
+                Wybranie elementu z listy otwiera jego szczegóły po prawej stronie.
               </p>
             </div>
 
@@ -453,7 +456,7 @@ export function SharedPhotosPanel() {
                   <PhotoImage
                     photoId={photo.id}
                     alt={
-                      photo.display_name || photo.description || `Archive photo from ${photo.location_text}`
+                      photo.display_name || photo.description || `Zdjęcie archiwalne z lokalizacji ${photo.location_text}`
                     }
                     className="photo-card__image"
                   />
@@ -462,23 +465,34 @@ export function SharedPhotosPanel() {
                     <h3>{photo.display_name || photo.location_text}</h3>
                     <p className="photo-card__meta">{photo.location_text}</p>
                     {photo.description ? <p>{photo.description}</p> : null}
-                    <p className="photo-card__meta">{formatPhotoDate(photo)}</p>
-                    <span className="inline-link">Show details on the right</span>
+                    <div className="photo-card__footer">
+                      <p className="photo-card__meta">{formatPhotoDate(photo)}</p>
+                      <span className="inline-link">Pokaż szczegóły</span>
+                    </div>
                   </div>
                 </button>
               ))}
             </div>
           </article>
 
-          <article className="photo-panel">
+          <article className="photo-panel archive-map-panel">
             <div className="photo-panel__heading">
               <div>
-                <p className="eyebrow">Map view</p>
-                <h2>Photos with coordinates</h2>
+                <p className="eyebrow">Widok mapy</p>
+                <h2>Odkrywaj zdjęcia przez miejsca</h2>
               </div>
               <p className="photo-panel__meta">
-                Only photos with usable coordinates appear on the map.
+                Na mapie pojawiają się tylko zdjęcia z użytecznymi współrzędnymi.
               </p>
+            </div>
+
+            <div className="archive-map-panel__status">
+              <span>{mappablePhotos.length} punktów w aktualnym widoku</span>
+              <span>
+                {selectedPhotoHasMapCoordinates
+                  ? "Wybrane zdjęcie jest widoczne także na mapie."
+                  : "Wybrane zdjęcie nie ma współrzędnych lub nie zostało jeszcze wskazane."}
+              </span>
             </div>
 
             <SimplePhotoMap
@@ -489,15 +503,9 @@ export function SharedPhotosPanel() {
                 label: photo.location_text,
               }))}
               viewResetKey={mapViewResetKey}
-              selectedPointId={
-                selectedPhoto &&
-                selectedPhoto.latitude !== null &&
-                selectedPhoto.longitude !== null
-                  ? selectedPhoto.id
-                  : null
-              }
+              selectedPointId={selectedPhotoHasMapCoordinates ? selectedPhoto?.id : null}
               onSelectPoint={(pointId) => setSelectedPhotoId(Number(pointId))}
-              emptyLabel="No photos with coordinates are available yet."
+              emptyLabel="Nie ma jeszcze zdjęć z dostępnymi współrzędnymi."
             />
           </article>
         </section>

@@ -26,48 +26,48 @@ function formatPhotoDate(photo: Photo): string {
 export function SharedSelectedPhotoPanel({ photo }: Props) {
   if (!photo) {
     return (
-      <article className="photo-panel">
-        <p className="eyebrow">Shared photo detail</p>
-        <h2>Select a photo</h2>
+      <article className="photo-panel archive-detail-panel archive-detail-panel--empty">
+        <p className="eyebrow">Szczegóły zdjęcia</p>
+        <h2>Wybierz zdjęcie</h2>
         <p className="lede">
-          Choose a photo from the list or click a map pin to open its details beside the map.
+          Wybierz zdjęcie z listy albo kliknij pinezkę na mapie, aby otworzyć jego szczegóły obok mapy.
         </p>
       </article>
     );
   }
 
   return (
-    <article className="photo-panel">
-      <p className="eyebrow">Shared photo detail</p>
+    <article className="photo-panel archive-detail-panel">
+      <p className="eyebrow">Szczegóły zdjęcia</p>
       <h2>{photo.display_name || photo.location_text}</h2>
       {photo.description ? <p className="lede">{photo.description}</p> : null}
 
       <PhotoImage
         photoId={photo.id}
-        alt={photo.display_name || photo.description || `Archive photo from ${photo.location_text}`}
+        alt={photo.display_name || photo.description || `Zdjęcie archiwalne z lokalizacji ${photo.location_text}`}
         className="photo-detail__image"
       />
 
       <dl className="photo-detail__meta">
         <div>
-          <dt>Photo title</dt>
+          <dt>Tytuł zdjęcia</dt>
           <dd>{photo.display_name || photo.location_text}</dd>
         </div>
         <div>
-          <dt>Category</dt>
+          <dt>Kategoria</dt>
           <dd>{photo.category.name}</dd>
         </div>
         <div>
-          <dt>Taken date</dt>
+          <dt>Data wykonania</dt>
           <dd>{formatPhotoDate(photo)}</dd>
         </div>
         <div>
-          <dt>Location</dt>
+          <dt>Lokalizacja</dt>
           <dd>{photo.location_text}</dd>
         </div>
         {photo.latitude !== null && photo.longitude !== null ? (
           <div>
-            <dt>Coordinates</dt>
+            <dt>Współrzędne</dt>
             <dd>
               {photo.latitude.toFixed(6)}, {photo.longitude.toFixed(6)}
             </dd>
@@ -75,9 +75,14 @@ export function SharedSelectedPhotoPanel({ photo }: Props) {
         ) : null}
       </dl>
 
-      <Link href={`/all_photos/${photo.id}`} className="inline-link">
-        Open dedicated detail page
-      </Link>
+      <div className="archive-detail-panel__footer">
+        <span className="archive-detail-panel__hint">
+          Ten panel pozostaje zsynchronizowany z listą i mapą.
+        </span>
+        <Link href={`/all_photos/${photo.id}`} className="inline-link">
+          Otwórz osobną stronę szczegółów
+        </Link>
+      </div>
     </article>
   );
 }

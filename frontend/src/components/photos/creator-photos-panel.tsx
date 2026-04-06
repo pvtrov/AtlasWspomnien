@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -77,10 +77,12 @@ export function CreatorPhotosPanel() {
   const { currentUser, status } = useAuth();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadMessage, setLoadMessage] = useState("Your uploaded photos will appear here.");
+  const [loadMessage, setLoadMessage] = useState("W tym miejscu pojawią się Twoje dodane zdjęcia.");
   const [submitMessage, setSubmitMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [values, setValues] = useState<UploadFormValues>(initialUploadValues);
+  const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
+  const isBlocked = currentUser?.is_blocked ?? false;
 
   const token = useMemo(() => {
     if (typeof window === "undefined") {
@@ -103,14 +105,14 @@ export function CreatorPhotosPanel() {
         setPhotos(response);
         setLoadMessage(
           response.length > 0
-            ? "Your latest uploaded photos are ready to manage."
-            : "You have not uploaded any photos yet.",
+            ? "Twoje najnowsze zdjęcia są gotowe do zarządzania."
+            : "Nie dodano jeszcze żadnych zdjęć.",
         );
       } catch (error) {
         setLoadMessage(
           error instanceof Error
             ? error.message
-            : "Could not load your photos.",
+            : "Nie udało się pobrać Twoich zdjęć.",
         );
       } finally {
         setIsLoading(false);
@@ -119,6 +121,16 @@ export function CreatorPhotosPanel() {
 
     void loadPhotos();
   }, [currentUser, status, token]);
+
+  useEffect(() => {
+    const textarea = descriptionRef.current;
+    if (!textarea) {
+      return;
+    }
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${Math.max(textarea.scrollHeight, 52)}px`;
+  }, [values.description]);
 
   function handleFieldChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -137,13 +149,18 @@ export function CreatorPhotosPanel() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
 
+    if (isBlocked) {
+      setSubmitMessage("Jesteś zablokowany, skontaktuj się z administracją.");
+      return;
+    }
+
     if (!token) {
-      setSubmitMessage("Please log in to upload a photo.");
+      setSubmitMessage("Zaloguj się, aby dodać zdjęcie.");
       return;
     }
 
     if (!values.file) {
-      setSubmitMessage("Please choose a photo file.");
+      setSubmitMessage("Wybierz plik ze zdjęciem.");
       return;
     }
 
@@ -163,11 +180,11 @@ export function CreatorPhotosPanel() {
       });
       setPhotos((currentPhotos) => [createdPhoto, ...currentPhotos]);
       setValues(initialUploadValues);
-      setSubmitMessage("Photo uploaded successfully.");
-      setLoadMessage("Your latest uploaded photos are ready to manage.");
+      setSubmitMessage("Zdjęcie zostało dodane.");
+      setLoadMessage("Twoje najnowsze zdjęcia są gotowe do zarządzania.");
     } catch (error) {
       setSubmitMessage(
-        error instanceof Error ? error.message : "Photo upload failed.",
+        error instanceof Error ? error.message : "Dodawanie zdjęcia nie powiodło się.",
       );
     } finally {
       setIsSubmitting(false);
@@ -177,7 +194,7 @@ export function CreatorPhotosPanel() {
   if (status === "loading") {
     return (
       <section className="photo-panel">
-        <p className="lede">Checking your creator session...</p>
+        <p className="lede">Sprawdzanie sesji twórcy...</p>
       </section>
     );
   }
@@ -186,16 +203,16 @@ export function CreatorPhotosPanel() {
     return (
       <section className="photo-panel">
         <p className="eyebrow">Sprint 3</p>
-        <h1>Creator photo flow</h1>
+        <h1>Przestrzeń twórcy</h1>
         <p className="lede">
-          Log in as a creator to upload photos and manage your own archive materials.
+          Zaloguj się jako twórca, aby dodawać zdjęcia i zarządzać własnymi materiałami archiwalnymi.
         </p>
         <div className="photo-panel__actions">
           <Link href="/login" className="inline-link">
-            Go to login
+            Przejdź do logowania
           </Link>
           <Link href="/register" className="inline-link">
-            Create an account
+            Załóż konto
           </Link>
         </div>
       </section>
@@ -203,142 +220,155 @@ export function CreatorPhotosPanel() {
   }
 
   return (
-    <section className="photo-workspace">
-      <div className="photo-panel">
-        <p className="eyebrow">Sprint 3</p>
-        <h1>Upload and manage your photos.</h1>
-        <p className="lede">
-          Add one archive photo with the required metadata, then open each photo
-          for its first edit or delete flow.
-        </p>
-
-        <form className="photo-form" onSubmit={handleSubmit}>
-          <div className="auth-field">
-            <label htmlFor="file">Photo file</label>
-            <input
-              id="file"
-              name="file"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-            />
-          </div>
-
-          <div className="photo-form__grid">
-            <div className="auth-field">
-              <label htmlFor="category_slug">Category</label>
-              <select
-                id="category_slug"
-                name="category_slug"
-                value={values.category_slug}
-                onChange={handleFieldChange}
-              >
-                {PHOTO_CATEGORY_OPTIONS.map((option) => (
-                  <option key={option.slug} value={option.slug}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <PartialDateInput
-            legend="Photo date"
-            baseName="uploadDate"
-            value={createPartialDateValue(
-              values.taken_year,
-              values.taken_month,
-              values.taken_day,
-            )}
-            onChange={(nextValue) =>
-              setValues((currentValues) => ({
-                ...currentValues,
-                taken_year: nextValue.year,
-                taken_month: nextValue.month,
-                taken_day: nextValue.day,
-              }))
-            }
-          />
-
-          <PhotoLocationEditor
-            locationText={values.location_text}
-            latitudeText={values.latitude}
-            longitudeText={values.longitude}
-            onLocationTextChange={(value) =>
-              setValues((currentValues) => ({
-                ...currentValues,
-                location_text: value,
-              }))
-            }
-            onLatitudeTextChange={(value) =>
-              setValues((currentValues) => ({
-                ...currentValues,
-                latitude: value,
-              }))
-            }
-            onLongitudeTextChange={(value) =>
-              setValues((currentValues) => ({
-                ...currentValues,
-                longitude: value,
-              }))
-            }
-          />
-
-          <div className="auth-field">
-            <label htmlFor="display_name">Photo title</label>
-            <input
-              id="display_name"
-              name="display_name"
-              type="text"
-              value={values.display_name}
-              onChange={handleFieldChange}
-              required
-            />
-          </div>
-
-          <div className="auth-field">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              rows={5}
-              value={values.description}
-              onChange={handleFieldChange}
-            />
-          </div>
-
-          <button className="auth-form__submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Uploading..." : "Upload photo"}
-          </button>
-
-          <p className="auth-form__message" aria-live="polite">
-            {submitMessage}
+    <section className="photo-workspace creator-workspace">
+      <div className={`creator-blocked-surface creator-blocked-surface--panel${isBlocked ? " creator-blocked-surface--inactive" : ""}`}>
+        <div className="photo-panel creator-workspace__form-panel">
+          <p className="eyebrow">Atlas Wspomnień</p>
+          <h1>Dodawaj i zarządzaj swoimi zdjęciami.</h1>
+          <p className="lede">
+            Dodaj zdjęcie archiwalne z wymaganymi metadanymi, a potem otwieraj jego szczegóły, aby je edytować lub usunąć.
           </p>
-        </form>
+
+          <form className="photo-form creator-photo-form" onSubmit={handleSubmit}>
+            <div className="creator-photo-form__primary">
+              <div className="auth-field">
+                <label htmlFor="display_name">Tytuł zdjęcia</label>
+                <input
+                  id="display_name"
+                  name="display_name"
+                  type="text"
+                  value={values.display_name}
+                  onChange={handleFieldChange}
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="description">Opis</label>
+                <textarea
+                  ref={descriptionRef}
+                  id="description"
+                  name="description"
+                  rows={1}
+                  className="auth-field__textarea--autogrow"
+                  value={values.description}
+                  onChange={handleFieldChange}
+                />
+              </div>
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="file">Plik zdjęcia</label>
+              <input
+                id="file"
+                name="file"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            <div className="photo-form__grid">
+              <div className="auth-field">
+                <label htmlFor="category_slug">Kategoria</label>
+                <select
+                  id="category_slug"
+                  name="category_slug"
+                  value={values.category_slug}
+                  onChange={handleFieldChange}
+                >
+                  {PHOTO_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.slug} value={option.slug}>
+                      {option.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <PartialDateInput
+              legend="Data zdjęcia"
+              baseName="uploadDate"
+              value={createPartialDateValue(
+                values.taken_year,
+                values.taken_month,
+                values.taken_day,
+              )}
+              onChange={(nextValue) =>
+                setValues((currentValues) => ({
+                  ...currentValues,
+                  taken_year: nextValue.year,
+                  taken_month: nextValue.month,
+                  taken_day: nextValue.day,
+                }))
+              }
+            />
+
+            <PhotoLocationEditor
+              locationText={values.location_text}
+              latitudeText={values.latitude}
+              longitudeText={values.longitude}
+              onLocationTextChange={(value) =>
+                setValues((currentValues) => ({
+                  ...currentValues,
+                  location_text: value,
+                }))
+              }
+              onLatitudeTextChange={(value) =>
+                setValues((currentValues) => ({
+                  ...currentValues,
+                  latitude: value,
+                }))
+              }
+              onLongitudeTextChange={(value) =>
+                setValues((currentValues) => ({
+                  ...currentValues,
+                  longitude: value,
+                }))
+              }
+            />
+
+            <div className="creator-photo-form__footer">
+              <button className="auth-form__submit" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Dodawanie..." : "Dodaj zdjęcie"}
+              </button>
+
+              <p className="auth-form__message" aria-live="polite">
+                {submitMessage}
+              </p>
+            </div>
+          </form>
+        </div>
+
+        {isBlocked ? (
+          <div className="creator-blocked-surface__overlay" role="status" aria-live="polite">
+            <p>Jesteś zablokowany, skontaktuj się z administracją.</p>
+          </div>
+        ) : null}
       </div>
 
-      <section className="photo-panel">
+      <section className="photo-panel creator-workspace__list-panel">
         <div className="photo-panel__heading">
           <div>
-            <p className="eyebrow">Your photos</p>
-            <h2>Creator-owned list</h2>
+            <p className="eyebrow">Twoje zdjęcia</p>
+            <h2>Lista materiałów twórcy</h2>
           </div>
           <p className="photo-panel__meta">{loadMessage}</p>
         </div>
 
-        {isLoading ? <p>Loading your photos...</p> : null}
+        {isLoading ? <p>Ładowanie Twoich zdjęć...</p> : null}
 
         {!isLoading && photos.length === 0 ? (
-          <p className="photo-list__empty">Upload your first photo to start managing it here.</p>
+          <p className="photo-list__empty">Dodaj pierwsze zdjęcie, aby zacząć nim zarządzać w tym miejscu.</p>
         ) : null}
 
         <div className="photo-list">
           {photos.map((photo) => (
-            <article key={photo.id} className="photo-card">
+            <article key={photo.id} className="photo-card creator-photo-card">
               {token ? (
                 <PhotoImage
                   photoId={photo.id}
-                  alt={photo.display_name || photo.description || `Archive photo from ${photo.location_text}`}
+                  alt={photo.display_name || photo.description || `Zdjęcie archiwalne z lokalizacji ${photo.location_text}`}
                   className="photo-card__image"
                 />
               ) : null}
@@ -347,10 +377,12 @@ export function CreatorPhotosPanel() {
                 <h3>{photo.display_name || photo.location_text}</h3>
                 <p className="photo-card__meta">{photo.location_text}</p>
                 {photo.description ? <p>{photo.description}</p> : null}
-                <p className="photo-card__meta">{formatPhotoDate(photo)}</p>
-                <Link href={`/photos/${photo.id}`} className="inline-link">
-                  Open detail view
-                </Link>
+                <div className="photo-card__footer">
+                  <p className="photo-card__meta">{formatPhotoDate(photo)}</p>
+                  <Link href={`/photos/${photo.id}`} className="inline-link">
+                    Otwórz szczegóły
+                  </Link>
+                </div>
               </div>
             </article>
           ))}

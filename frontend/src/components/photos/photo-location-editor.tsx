@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   geocodeLocation,
@@ -31,12 +31,14 @@ export function PhotoLocationEditor({
   onLongitudeTextChange,
 }: Props) {
   const [message, setMessage] = useState(
-    "Type a location to get address suggestions, or enter coordinates manually and place a pin on the map.",
+    "Wpisz miejsce, aby dostać podpowiedzi adresów, albo ustaw współrzędne ręcznie i wskaż pinezkę na mapie.",
   );
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [isSearchingSuggestions, setIsSearchingSuggestions] = useState(false);
   const [selectedSuggestionLabel, setSelectedSuggestionLabel] = useState("");
+  const [isLocationFieldActive, setIsLocationFieldActive] = useState(false);
+  const locationFieldRef = useRef<HTMLDivElement | null>(null);
 
   const hasCoordinates = latitudeText.trim() !== "" && longitudeText.trim() !== "";
   const pin = hasCoordinates
@@ -49,7 +51,7 @@ export function PhotoLocationEditor({
   useEffect(() => {
     const trimmedLocation = locationText.trim();
 
-    if (trimmedLocation.length < 3) {
+    if (!isLocationFieldActive || trimmedLocation.length < 3) {
       setSuggestions([]);
       setIsSearchingSuggestions(false);
       return;
@@ -85,11 +87,11 @@ export function PhotoLocationEditor({
       isCancelled = true;
       window.clearTimeout(timeoutId);
     };
-  }, [locationText, selectedSuggestionLabel]);
+  }, [isLocationFieldActive, locationText, selectedSuggestionLabel]);
 
   async function handleGeocode(): Promise<void> {
     if (!locationText.trim()) {
-      setMessage("Enter a location name or address first.");
+      setMessage("Najpierw wpisz nazwę miejsca albo adres.");
       return;
     }
 
@@ -98,18 +100,18 @@ export function PhotoLocationEditor({
     try {
       const match = await geocodeLocation(locationText);
       if (!match) {
-        setMessage("No coordinates were found for that typed location. You can still place a pin manually.");
+        setMessage("Nie znaleziono współrzędnych dla podanej lokalizacji. Nadal możesz ustawić pinezkę ręcznie.");
         return;
       }
 
       onLatitudeTextChange(formatCoordinate(match.latitude));
       onLongitudeTextChange(formatCoordinate(match.longitude));
-      setMessage(`Coordinates resolved from "${match.label}".`);
+      setMessage(`Ustalono współrzędne na podstawie lokalizacji „${match.label}”.`);
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : "Could not geocode this location.",
+          : "Nie udało się ustalić współrzędnych dla tej lokalizacji.",
       );
     } finally {
       setIsGeocoding(false);
@@ -119,7 +121,7 @@ export function PhotoLocationEditor({
   function handleClearCoordinates(): void {
     onLatitudeTextChange("");
     onLongitudeTextChange("");
-    setMessage("Coordinates cleared. The human-readable location text remains unchanged.");
+    setMessage("Współrzędne zostały wyczyszczone. Tekst lokalizacji pozostał bez zmian.");
   }
 
   function handleSuggestionSelect(suggestion: LocationSuggestion): void {
@@ -128,32 +130,49 @@ export function PhotoLocationEditor({
     onLatitudeTextChange(formatCoordinate(suggestion.latitude));
     onLongitudeTextChange(formatCoordinate(suggestion.longitude));
     setSuggestions([]);
-    setMessage(`Location and coordinates resolved from "${suggestion.label}".`);
+    setMessage(`Uzupełniono lokalizację i współrzędne na podstawie „${suggestion.label}”.`);
   }
 
   return (
     <section className="location-editor">
-      <div className="photo-form__grid">
-        <div className="auth-field">
-          <label htmlFor="location_text">Location</label>
+      <div className="location-editor__layout">
+        <div
+          ref={locationFieldRef}
+          className="auth-field location-editor__location-field"
+          onBlurCapture={(event) => {
+            const nextTarget = event.relatedTarget;
+            if (
+              nextTarget instanceof Node &&
+              locationFieldRef.current?.contains(nextTarget)
+            ) {
+              return;
+            }
+
+            setIsLocationFieldActive(false);
+            setSuggestions([]);
+            setIsSearchingSuggestions(false);
+          }}
+        >
+          <label htmlFor="location_text">Lokalizacja</label>
           <input
             id="location_text"
             name="location_text"
             type="text"
             value={locationText}
+            onFocus={() => setIsLocationFieldActive(true)}
             onChange={(event) => {
               setSelectedSuggestionLabel("");
               onLocationTextChange(event.target.value);
             }}
           />
           <p className="location-editor__hint">
-            Pick an address suggestion to fill in both the location text and coordinates automatically.
+            Wybierz podpowiedź adresu, aby automatycznie uzupełnić tekst lokalizacji i współrzędne.
           </p>
           {isSearchingSuggestions ? (
-            <p className="location-editor__hint">Searching suggestions...</p>
+            <p className="location-editor__hint">Wyszukiwanie podpowiedzi...</p>
           ) : null}
           {!isSearchingSuggestions && suggestions.length > 0 ? (
-            <div className="location-suggestions" role="listbox" aria-label="Location suggestions">
+            <div className="location-suggestions" role="listbox" aria-label="Podpowiedzi lokalizacji">
               {suggestions.map((suggestion) => (
                 <button
                   key={`${suggestion.label}-${suggestion.latitude}-${suggestion.longitude}`}
@@ -168,34 +187,36 @@ export function PhotoLocationEditor({
           ) : null}
         </div>
 
-        <div className="auth-field">
-          <label htmlFor="latitude">Latitude</label>
-          <input
-            id="latitude"
-            name="latitude"
-            type="number"
-            inputMode="decimal"
-            step="0.000001"
-            min="-90"
-            max="90"
-            value={latitudeText}
-            onChange={(event) => onLatitudeTextChange(event.target.value)}
-          />
-        </div>
+        <div className="location-editor__coordinates">
+          <div className="auth-field">
+            <label htmlFor="latitude">Szerokość geograficzna</label>
+            <input
+              id="latitude"
+              name="latitude"
+              type="number"
+              inputMode="decimal"
+              step="0.000001"
+              min="-90"
+              max="90"
+              value={latitudeText}
+              onChange={(event) => onLatitudeTextChange(event.target.value)}
+            />
+          </div>
 
-        <div className="auth-field">
-          <label htmlFor="longitude">Longitude</label>
-          <input
-            id="longitude"
-            name="longitude"
-            type="number"
-            inputMode="decimal"
-            step="0.000001"
-            min="-180"
-            max="180"
-            value={longitudeText}
-            onChange={(event) => onLongitudeTextChange(event.target.value)}
-          />
+          <div className="auth-field">
+            <label htmlFor="longitude">Długość geograficzna</label>
+            <input
+              id="longitude"
+              name="longitude"
+              type="number"
+              inputMode="decimal"
+              step="0.000001"
+              min="-180"
+              max="180"
+              value={longitudeText}
+              onChange={(event) => onLongitudeTextChange(event.target.value)}
+            />
+          </div>
         </div>
       </div>
 
@@ -206,7 +227,7 @@ export function PhotoLocationEditor({
           onClick={() => void handleGeocode()}
           disabled={isGeocoding}
         >
-          {isGeocoding ? "Resolving..." : "Resolve typed location"}
+          {isGeocoding ? "Ustalanie..." : "Ustal współrzędne z wpisanej lokalizacji"}
         </button>
 
         <button
@@ -214,7 +235,7 @@ export function PhotoLocationEditor({
           className="button button--secondary"
           onClick={handleClearCoordinates}
         >
-          Clear coordinates
+          Wyczyść współrzędne
         </button>
       </div>
 
@@ -226,9 +247,9 @@ export function PhotoLocationEditor({
         onSetPin={(coordinates) => {
           onLatitudeTextChange(formatCoordinate(coordinates.latitude));
           onLongitudeTextChange(formatCoordinate(coordinates.longitude));
-          setMessage("Pin placed on the map.");
+          setMessage("Pinezka została ustawiona na mapie.");
         }}
-        emptyLabel="Click to place a location pin for this photo."
+        emptyLabel="Kliknij, aby ustawić pinezkę lokalizacji dla tego zdjęcia."
       />
 
       <p className="auth-form__message" aria-live="polite">
