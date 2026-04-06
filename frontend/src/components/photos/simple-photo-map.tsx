@@ -356,7 +356,7 @@ export function SimplePhotoMap({
             type="button"
             className="photo-map__control-button"
             onClick={() => setManualZoom(zoom + 1)}
-            aria-label="Zoom in"
+            aria-label="Powiększ mapę"
           >
             +
           </button>
@@ -364,7 +364,7 @@ export function SimplePhotoMap({
             type="button"
             className="photo-map__control-button"
             onClick={() => setManualZoom(zoom - 1)}
-            aria-label="Zoom out"
+            aria-label="Pomniejsz mapę"
           >
             -
           </button>
@@ -373,7 +373,7 @@ export function SimplePhotoMap({
             className="photo-map__control-button photo-map__control-button--wide"
             onClick={resetView}
           >
-            Reset view
+            Resetuj widok
           </button>
         </div>
 
