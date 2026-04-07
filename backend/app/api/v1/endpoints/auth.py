@@ -148,7 +148,8 @@ def register_creator(payload: RegisterRequest, db: DbSession) -> RegisterRespons
 
 @router.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest, db: DbSession) -> LoginResponse:
-    user = UserRepository(db).get_by_email(payload.email.strip().lower())
+    repository = UserRepository(db)
+    user = repository.get_by_email(payload.email.strip().lower())
 
     if user is None or not verify_password(payload.password, user.password_hash):
         raise HTTPException(
@@ -156,6 +157,7 @@ def login(payload: LoginRequest, db: DbSession) -> LoginResponse:
             detail="Invalid credentials.",
         )
 
+    user = repository.record_successful_login(user)
     access_token = create_access_token(subject=str(user.id))
 
     return LoginResponse(

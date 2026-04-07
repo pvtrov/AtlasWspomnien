@@ -1,3 +1,4 @@
+from datetime import datetime
 import unicodedata
 
 from sqlalchemy import case, func, literal, or_, select
@@ -5,6 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.models.photo import Photo
 from app.models.photo_category import PhotoCategory
+from app.models.user import User
 from app.schemas.photo import PhotoListFilters, parse_partial_date_bound
 
 POLISH_ASCII_TRANSLATION = str.maketrans(
@@ -73,6 +75,25 @@ class PhotoRepository:
             select(Photo)
             .options(joinedload(Photo.category))
             .order_by(Photo.created_at.desc(), Photo.id.desc())
+        )
+        return list(self.db.scalars(statement).unique())
+
+    def list_recent_for_administrator(
+        self,
+        *,
+        previous_successful_login_at: datetime,
+        last_successful_login_at: datetime,
+    ) -> list[Photo]:
+        effective_activity_at = func.coalesce(Photo.updated_at, Photo.created_at)
+        statement = (
+            select(Photo)
+            .join(Photo.owner)
+            .options(joinedload(Photo.category), joinedload(Photo.owner))
+            .where(
+                effective_activity_at > previous_successful_login_at,
+                effective_activity_at <= last_successful_login_at,
+            )
+            .order_by(effective_activity_at.desc(), Photo.id.desc())
         )
         return list(self.db.scalars(statement).unique())
 

@@ -89,7 +89,10 @@ Allow administrators to moderate photos from the same shared photo detail layer 
 - kept the existing shared photo detail page as the single archive-viewing surface for all users,
 - added administrator-only metadata edit controls to that shared detail page,
 - added an administrator-only remove action to that shared detail page,
+- added administrator login-window tracking so the admin area can list photos whose latest activity happened since the previous successful administrator login,
+- added a focused administrator review section that links each recent-photo item into the same shared photo detail moderation flow,
 - kept moderation wired to the documented `PATCH /api/v1/admin/photos/{photo_id}` and `DELETE /api/v1/admin/photos/{photo_id}` endpoints,
+- documented and exposed the supporting `GET /api/v1/admin/recent-photos` endpoint for this review slice,
 - kept non-admin and anonymous users on the same shared detail layer without exposing moderation controls.
 
 #### Agent Notes

@@ -18,10 +18,12 @@ The repository now includes:
 - creator-owned backend photo listing, detail, metadata edit, delete, and authenticated image retrieval,
 - backend creator registration and login endpoints,
 - password hashing and JWT-based authentication foundation,
+- successful-login timestamp tracking that now preserves the previous administrator login window for recent-photo review,
 - frontend login and registration screens connected to backend authentication,
 - minimal frontend authenticated state handling,
 - a frontend creator photo workspace with upload, owned-photo list, detail, edit, and delete flows,
 - administrator-only backend moderation routes for user listing, creator blocking, administrator promotion, photo metadata correction, and photo removal,
+- an administrator-only backend recent-photo review route that lists photos with activity since the previous successful administrator login,
 - administrator visibility into shared backend photo listing and detail routes for moderation work,
 - public backend shared photo listing, detail, and image retrieval routes for archive browsing,
 - public backend shared photo reading now extended with optional photo coordinates,
@@ -34,6 +36,7 @@ The repository now includes:
 - a shared frontend archive discovery surface on the home route with a photo list, map-based browsing for coordinate-bearing photos, and inline photo details,
 - a shared frontend archive filter surface on the home route with collapsible search and filtering controls, exact/range date filtering, and active-filter summaries,
 - administrator-only moderation controls embedded into the shared frontend photo detail page,
+- an administrator review section that lists recently active photos and links each item into the shared photo detail moderation flow,
 - a frontend redirect from `/all_photos` to the shared home-page archive listing,
 - photo metadata now separated into a human-facing optional `display_name` title and a required `location_text` location field,
 - creator and administrator photo forms now include OSM-based location suggestions that can fill both the location text and coordinates,
@@ -45,7 +48,7 @@ The repository now includes:
 - backend test coverage for the implemented shared archive browsing behavior,
 - project and sprint documentation aligned with the implemented Sprint 1, Sprint 2, Sprint 3, Sprint 4 moderation scope, Sprint 5 shared browsing and moderation-in-context scope, Sprint 6 map, search, and filtering scope, and current Sprint 7 polish work.
 
-The current repository state now includes the shared archive browsing layer together with administrator moderation controls embedded into shared photo views, the first map-based discovery layer for photos with usable coordinates, practical Sprint 6 search-and-filtering wired directly into the shared archive experience, and a first substantial Sprint 7 polish pass across the public archive, creator workspaces, administrator moderation view, and detailed photo presentation.
+The current repository state now includes the shared archive browsing layer together with administrator moderation controls embedded into shared photo views, the first map-based discovery layer for photos with usable coordinates, practical Sprint 6 search-and-filtering wired directly into the shared archive experience, a focused administrator recent-photo review slice driven by successful-login windows, and a first substantial Sprint 7 polish pass across the public archive, creator workspaces, administrator moderation view, and detailed photo presentation.
 
 ## Confirmed Decisions
 
@@ -91,6 +94,7 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - creator registration and login endpoints,
 - password hashing and credential verification,
 - JWT-based bearer-token authentication for Sprint 2,
+- successful-login timestamp rotation that preserves the previous administrator login window for moderation review,
 - an authenticated current-user route at `/api/v1/auth/me`,
 - public shared photo listing, detail, and image retrieval routes under `/api/v1/photos`,
 - public shared photo listing now supports practical archive `query`, `category`, `location`, `taken_year`, `taken_month`, `date_from`, and `date_to` filters,
@@ -98,6 +102,7 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - authenticated creator-owned photo listing, detail, metadata update, delete, and image retrieval routes under `/api/v1/photos`,
 - administrator visibility into backend photo list, detail, and image access for moderation work,
 - administrator moderation routes under `/api/v1/admin` for user listing, creator blocking, administrator promotion, photo metadata edit, and photo removal,
+- an administrator-only `/api/v1/admin/recent-photos` route that returns photos whose latest activity falls inside the previous successful administrator login window,
 - blocked-creator backend rules that allow login and viewing but prevent upload and metadata update actions,
 - local filesystem photo storage handling for uploaded archive materials,
 - backend validation for Sprint 3 photo upload and edit fields, including optional empty descriptions,
@@ -126,6 +131,7 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - an implicit public `viewer` role for non-authenticated archive access,
 - a unique `username` field as the initial nick or handle representation,
 - a user blocking flag now used by the implemented MVP moderation flow,
+- login-tracking fields for `last_successful_login_at` and `previous_successful_login_at`,
 - backend user and auth schemas for registration, login, and current-user flows.
 
 ### Photo Domain
@@ -166,6 +172,7 @@ The repository now includes the implemented Sprint 1 foundation, the Sprint 2 au
 - shared archive filters with collapsible search controls, exact/range date input, active-filter chips, and map reset behavior after filter application,
 - frontend upload, list, detail, edit, and delete flows aligned with the documented backend contract,
 - a basic administrator page for user listing and creator blocking,
+- an administrator review section for photos added or updated since the previous successful administrator login,
 - photo rendering through a shared public image endpoint without exposing storage references in the UI,
 - frontend behavior that keeps non-admin users on the same shared photo detail layer without showing moderation controls,
 - a shared map view that shows only photos with usable coordinates, supports pan/zoom/reset interaction, and keeps the selected photo details visible beside the map on desktop layouts,

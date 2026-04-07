@@ -88,6 +88,32 @@ class PhotoListResponse(BaseModel):
     photos: list[PhotoRead]
 
 
+class AdminRecentPhotoRead(BaseModel):
+    id: int
+    owner_id: int
+    owner_username: str
+    category_id: int
+    description: str
+    display_name: str | None
+    location_text: str
+    latitude: float | None
+    longitude: float | None
+    taken_year: int
+    taken_month: int | None
+    taken_day: int | None
+    category: PhotoCategoryRead
+    created_at: datetime
+    updated_at: datetime
+    effective_activity_at: datetime
+
+
+class AdminRecentPhotoListResponse(BaseModel):
+    has_previous_successful_login: bool
+    previous_successful_login_at: datetime | None
+    last_successful_login_at: datetime | None
+    photos: list[AdminRecentPhotoRead]
+
+
 PARTIAL_DATE_PATTERN = re.compile(r"^(?P<year>\d{4})(?:-(?P<month>\d{2})(?:-(?P<day>\d{2}))?)?$")
 
 

@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -51,6 +53,14 @@ class UserRepository:
 
     def set_role(self, user: User, *, role: UserRole) -> User:
         user.role = role
+        self.db.add(user)
+        self.db.commit()
+        self.db.refresh(user)
+        return user
+
+    def record_successful_login(self, user: User) -> User:
+        user.previous_successful_login_at = user.last_successful_login_at
+        user.last_successful_login_at = datetime.now(timezone.utc)
         self.db.add(user)
         self.db.commit()
         self.db.refresh(user)

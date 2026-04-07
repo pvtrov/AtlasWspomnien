@@ -81,6 +81,32 @@ export type AdminUserListResponse = {
   users: AdminUser[];
 };
 
+export type AdminRecentPhoto = {
+  id: number;
+  owner_id: number;
+  owner_username: string;
+  category_id: number;
+  description: string;
+  display_name: string | null;
+  location_text: string;
+  latitude: number | null;
+  longitude: number | null;
+  taken_year: number;
+  taken_month: number | null;
+  taken_day: number | null;
+  category: PhotoCategory;
+  created_at: string;
+  updated_at: string;
+  effective_activity_at: string;
+};
+
+export type AdminRecentPhotoListResponse = {
+  has_previous_successful_login: boolean;
+  previous_successful_login_at: string | null;
+  last_successful_login_at: string | null;
+  photos: AdminRecentPhoto[];
+};
+
 export type PhotoUploadRequest = {
   file: File;
   category_slug: string;
@@ -467,6 +493,20 @@ export async function updateAdminPhoto(
 
   const responsePayload = (await response.json()) as PhotoResponse;
   return responsePayload.photo;
+}
+
+export async function listRecentAdminPhotos(
+  token: string,
+): Promise<AdminRecentPhotoListResponse> {
+  const response = await fetch(buildApiUrl("/api/v1/admin/recent-photos"), {
+    headers: buildAuthorizedHeaders(token),
+  });
+
+  if (!response.ok) {
+    throw new Error(await readErrorMessage(response));
+  }
+
+  return (await response.json()) as AdminRecentPhotoListResponse;
 }
 
 export async function deleteAdminPhoto(
