@@ -39,6 +39,7 @@ class PhotoCreate(BaseModel):
 class PhotoRead(BaseModel):
     id: int
     owner_id: int
+    owner_username: str
     category_id: int
     description: str
     display_name: str | None

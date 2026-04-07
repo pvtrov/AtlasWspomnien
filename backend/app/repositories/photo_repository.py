@@ -64,7 +64,7 @@ class PhotoRepository:
     def list_by_owner(self, *, owner_id: int) -> list[Photo]:
         statement = (
             select(Photo)
-            .options(joinedload(Photo.category))
+            .options(joinedload(Photo.category), joinedload(Photo.owner))
             .where(Photo.owner_id == owner_id)
             .order_by(Photo.created_at.desc(), Photo.id.desc())
         )
@@ -73,7 +73,7 @@ class PhotoRepository:
     def list_all(self) -> list[Photo]:
         statement = (
             select(Photo)
-            .options(joinedload(Photo.category))
+            .options(joinedload(Photo.category), joinedload(Photo.owner))
             .order_by(Photo.created_at.desc(), Photo.id.desc())
         )
         return list(self.db.scalars(statement).unique())
@@ -98,7 +98,11 @@ class PhotoRepository:
         return list(self.db.scalars(statement).unique())
 
     def list_shared(self, *, filters: PhotoListFilters) -> list[Photo]:
-        statement = select(Photo).options(joinedload(Photo.category)).join(Photo.category)
+        statement = (
+            select(Photo)
+            .options(joinedload(Photo.category), joinedload(Photo.owner))
+            .join(Photo.category)
+        )
 
         if filters.query is not None:
             pattern = self._normalized_pattern(filters.query)
@@ -147,7 +151,7 @@ class PhotoRepository:
     def get_by_id(self, *, photo_id: int) -> Photo | None:
         statement = (
             select(Photo)
-            .options(joinedload(Photo.category))
+            .options(joinedload(Photo.category), joinedload(Photo.owner))
             .where(Photo.id == photo_id)
         )
         return self.db.scalar(statement)
@@ -155,7 +159,7 @@ class PhotoRepository:
     def get_by_id_and_owner(self, *, photo_id: int, owner_id: int) -> Photo | None:
         statement = (
             select(Photo)
-            .options(joinedload(Photo.category))
+            .options(joinedload(Photo.category), joinedload(Photo.owner))
             .where(
                 Photo.id == photo_id,
                 Photo.owner_id == owner_id,

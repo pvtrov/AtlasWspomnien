@@ -54,3 +54,7 @@ class Photo(Base):
 
     owner: Mapped[User] = relationship(back_populates="photos")
     category: Mapped[PhotoCategory] = relationship(back_populates="photos")
+
+    @property
+    def owner_username(self) -> str:
+        return self.owner.username

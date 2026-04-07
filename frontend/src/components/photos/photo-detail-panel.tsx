@@ -307,6 +307,10 @@ export function PhotoDetailPanel() {
                 <dd>{photo.display_name || photo.location_text}</dd>
               </div>
               <div>
+                <dt>Autor</dt>
+                <dd>{photo.owner_username}</dd>
+              </div>
+              <div>
                 <dt>Lokalizacja</dt>
                 <dd>{photo.location_text}</dd>
               </div>

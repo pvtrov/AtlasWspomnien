@@ -33,6 +33,7 @@ export type PhotoCategory = {
 export type Photo = {
   id: number;
   owner_id: number;
+  owner_username: string;
   category_id: number;
   description: string;
   display_name: string | null;

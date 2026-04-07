@@ -241,12 +241,6 @@ export function AdminUsersPanel() {
                     : "Zablokuj twórcę"}
               </button>
             </div>
-
-            <p className="photo-panel__meta admin-polish-layout__detail-copy">
-              Ta sekcja zachowuje obecny przepływ moderacji, ale porządkuje najważniejsze informacje
-              o użytkowniku i akcję blokady w spokojniejszej hierarchii.
-            </p>
-
             <dl className="photo-detail__meta">
               <div>
                 <dt>ID użytkownika</dt>
