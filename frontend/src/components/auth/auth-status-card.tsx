@@ -10,9 +10,9 @@ export function AuthStatusCard() {
   if (status === "loading") {
     return (
       <article className="status-card">
-        <h2>Authentication</h2>
-        <p className="status-value status-value--neutral">Checking</p>
-        <p>Frontend is checking whether a valid authenticated session exists.</p>
+        <h2>Uwierzytelnienie</h2>
+        <p className="status-value status-value--neutral">Sprawdzanie</p>
+        <p>Interfejs sprawdza, czy istnieje ważna zalogowana sesja.</p>
       </article>
     );
   }
@@ -20,12 +20,12 @@ export function AuthStatusCard() {
   if (status === "unauthenticated" || currentUser === null) {
     return (
       <article className="status-card">
-        <h2>Authentication</h2>
-        <p className="status-value status-value--neutral">Logged out</p>
-        <p>Use the Sprint 2 auth screens to create an account or sign in.</p>
+        <h2>Uwierzytelnienie</h2>
+        <p className="status-value status-value--neutral">Wylogowano</p>
+        <p>Skorzystaj z formularzy logowania lub rejestracji, aby wejść do swojego konta.</p>
         <p className="status-card__actions">
-          <Link href="/login">Log in</Link>
-          <Link href="/register">Register</Link>
+          <Link href="/login">Zaloguj się</Link>
+          <Link href="/register">Zarejestruj się</Link>
         </p>
       </article>
     );
@@ -33,16 +33,16 @@ export function AuthStatusCard() {
 
   return (
     <article className="status-card">
-      <h2>Authentication</h2>
-      <p className="status-value status-value--success">Logged in</p>
+      <h2>Uwierzytelnienie</h2>
+      <p className="status-value status-value--success">Zalogowano</p>
       <p>
-        Signed in as <strong>{currentUser.username}</strong> ({currentUser.email}
+        Zalogowano jako <strong>{currentUser.username}</strong> ({currentUser.email}
         ).
       </p>
-      <p>The protected `GET /api/v1/auth/me` route is used to restore this state.</p>
+      <p>Do odtworzenia tego stanu aplikacja korzysta z chronionego endpointu `GET /api/v1/auth/me`.</p>
       <p className="status-card__actions">
         <button className="status-card__button" type="button" onClick={logout}>
-          Log out
+          Wyloguj
         </button>
         <button
           className="status-card__button status-card__button--secondary"
@@ -51,7 +51,7 @@ export function AuthStatusCard() {
             void refreshCurrentUser();
           }}
         >
-          Refresh session
+          Odśwież sesję
         </button>
       </p>
     </article>
