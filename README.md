@@ -27,7 +27,7 @@ To run the project locally you need:
 1. Clone the repository:
 
 ```bash
-git clone git@github.com-priv:pvtrov/AtlasWspomnien.git
+git clone git@github.com:pvtrov/AtlasWspomnien.git
 cd AtlasWspomnien
 ```
 
