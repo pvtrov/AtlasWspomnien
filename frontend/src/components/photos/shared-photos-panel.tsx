@@ -268,6 +268,9 @@ export function SharedPhotosPanel() {
   const filterSummaryItems = buildFilterSummary(appliedFilters);
   const selectedPhotoHasMapCoordinates =
     selectedPhoto?.latitude !== null && selectedPhoto?.longitude !== null;
+  const filterPanelId = "archive-filter-panel";
+  const archiveResultsId = "archive-results-heading";
+  const sharedArchiveStatusId = "shared-archive-status";
 
   return (
     <section className="archive-shell">
@@ -281,18 +284,22 @@ export function SharedPhotosPanel() {
             </p>
           </div>
           <div className="photo-filters-shell__actions">
-            <span className="photo-filters-shell__status">{activeFiltersLabel}</span>
+            <span className="photo-filters-shell__status" role="status" aria-live="polite">
+              {activeFiltersLabel}
+            </span>
             <button
               type="button"
               className="button button--secondary"
               onClick={() => setAreFiltersExpanded((currentValue) => !currentValue)}
+              aria-expanded={areFiltersExpanded}
+              aria-controls={filterPanelId}
             >
               {areFiltersExpanded ? "Ukryj filtry" : "Pokaż filtry"}
             </button>
           </div>
         </div>
 
-        <div className="photo-filter-summary" aria-live="polite">
+        <div className="photo-filter-summary" aria-live="polite" role="status">
           {filterSummaryItems.length > 0 ? (
             filterSummaryItems.map((item) => (
               <span key={item.key} className="photo-filter-summary__item">
@@ -310,7 +317,12 @@ export function SharedPhotosPanel() {
         </p>
 
         {areFiltersExpanded ? (
-          <form className="photo-filters" onSubmit={handleApplyFilters}>
+          <form
+            id={filterPanelId}
+            className="photo-filters"
+            onSubmit={handleApplyFilters}
+            aria-describedby={sharedArchiveStatusId}
+          >
             <div className="photo-filters__grid">
               <div className="auth-field">
                 <label htmlFor="query">Szukana fraza</label>
@@ -353,7 +365,9 @@ export function SharedPhotosPanel() {
             </div>
 
             <div className="photo-filters__date-mode">
-              <span className="photo-filters__section-label">Tryb daty</span>
+              <span className="photo-filters__section-label" id="date-filter-mode-label">
+                Tryb daty
+              </span>
               <div className="photo-filters__toggle">
                 <button
                   type="button"
@@ -361,6 +375,8 @@ export function SharedPhotosPanel() {
                     dateFilterMode === "exact" ? " photo-filters__toggle-button--active" : ""
                   }`}
                   onClick={() => setDateFilterMode("exact")}
+                  aria-pressed={dateFilterMode === "exact"}
+                  aria-describedby="date-filter-mode-label"
                 >
                   Dokładna data
                 </button>
@@ -370,6 +386,8 @@ export function SharedPhotosPanel() {
                     dateFilterMode === "range" ? " photo-filters__toggle-button--active" : ""
                   }`}
                   onClick={() => setDateFilterMode("range")}
+                  aria-pressed={dateFilterMode === "range"}
+                  aria-describedby="date-filter-mode-label"
                 >
                   Zakres
                 </button>
@@ -432,18 +450,31 @@ export function SharedPhotosPanel() {
 
       <div className="archive-discovery-layout">
         <section className="archive-discovery-main">
-          <article className="photo-panel archive-collection-panel">
+          <article
+            className="photo-panel archive-collection-panel"
+            aria-labelledby={archiveResultsId}
+            aria-describedby={sharedArchiveStatusId}
+          >
             <div className="photo-panel__heading">
               <div>
                 <p className="eyebrow">Lista archiwum</p>
-                <h2>Przeglądaj pasujące zdjęcia</h2>
+                <h2 id={archiveResultsId}>Przeglądaj pasujące zdjęcia</h2>
               </div>
               <p className="photo-panel__meta">
                 Wybranie elementu z listy otwiera jego szczegóły po prawej stronie.
               </p>
             </div>
 
-            <div className="photo-list photo-list--scrollable">
+            <p id={sharedArchiveStatusId} className="photo-panel__meta" aria-live="polite">
+              {message}
+            </p>
+
+            <div
+              className="photo-list photo-list--scrollable"
+              role="list"
+              aria-busy={isLoading}
+              aria-describedby={sharedArchiveStatusId}
+            >
               {photos.map((photo) => (
                 <button
                   key={photo.id}
@@ -452,6 +483,8 @@ export function SharedPhotosPanel() {
                     photo.id === selectedPhotoId ? " photo-card--selected" : ""
                   }`}
                   onClick={() => setSelectedPhotoId(photo.id)}
+                  aria-pressed={photo.id === selectedPhotoId}
+                  aria-describedby={`photo-card-meta-${photo.id}`}
                 >
                   <PhotoImage
                     photoId={photo.id}
@@ -463,7 +496,9 @@ export function SharedPhotosPanel() {
                   <div className="photo-card__body">
                     <p className="photo-card__category">{photo.category.name}</p>
                     <h3>{photo.display_name || photo.location_text}</h3>
-                    <p className="photo-card__meta">{photo.location_text}</p>
+                    <p id={`photo-card-meta-${photo.id}`} className="photo-card__meta">
+                      {photo.location_text}
+                    </p>
                     {photo.description ? <p>{photo.description}</p> : null}
                     <div className="photo-card__footer">
                       <p className="photo-card__meta">{formatPhotoDate(photo)}</p>
@@ -505,6 +540,7 @@ export function SharedPhotosPanel() {
               viewResetKey={mapViewResetKey}
               selectedPointId={selectedPhotoHasMapCoordinates ? selectedPhoto?.id : null}
               onSelectPoint={(pointId) => setSelectedPhotoId(Number(pointId))}
+              instructionsLabel="Strzałki przesuwają mapę, plus i minus zmieniają przybliżenie, a tabulator przenosi do pinezek."
               emptyLabel="Nie ma jeszcze zdjęć z dostępnymi współrzędnymi."
             />
           </article>

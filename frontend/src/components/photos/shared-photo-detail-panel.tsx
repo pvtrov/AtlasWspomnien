@@ -92,6 +92,8 @@ export function SharedPhotoDetailPanel() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
+  const lightboxCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+  const openLightboxButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const photoId = Number(params.photoId);
   const isAdministrator = currentUser?.role === "administrator";
@@ -134,6 +136,24 @@ export function SharedPhotoDetailPanel() {
     textarea.style.height = "auto";
     textarea.style.height = `${Math.max(textarea.scrollHeight, 52)}px`;
   }, [values?.description]);
+
+  useEffect(() => {
+    if (!isImageExpanded) {
+      openLightboxButtonRef.current?.focus();
+      return;
+    }
+
+    lightboxCloseButtonRef.current?.focus();
+
+    function handleEscapeKey(event: KeyboardEvent): void {
+      if (event.key === "Escape") {
+        setIsImageExpanded(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscapeKey);
+    return () => window.removeEventListener("keydown", handleEscapeKey);
+  }, [isImageExpanded]);
 
   function handleChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -235,10 +255,12 @@ export function SharedPhotoDetailPanel() {
 
         <div className="photo-story-panel__layout">
           <button
+            ref={openLightboxButtonRef}
             type="button"
             className="photo-detail__image-button"
             onClick={() => setIsImageExpanded(true)}
             aria-label="Pokaż zdjęcie w dużym widoku"
+            aria-haspopup="dialog"
           >
             <PhotoImage
               photoId={photo.id}
@@ -315,7 +337,7 @@ export function SharedPhotoDetailPanel() {
               </button>
             </div>
 
-            <p className="auth-form__message" aria-live="polite">
+            <p className="auth-form__message" aria-live="polite" role="status">
               {adminMessage}
             </p>
 
@@ -433,6 +455,7 @@ export function SharedPhotoDetailPanel() {
           onClick={() => setIsImageExpanded(false)}
         >
           <button
+            ref={lightboxCloseButtonRef}
             type="button"
             className="photo-lightbox__close"
             onClick={() => setIsImageExpanded(false)}

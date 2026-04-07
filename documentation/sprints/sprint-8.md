@@ -102,3 +102,18 @@ Sprint 8 można uznać za zakończony, gdy:
 - główne widoki mają poprawioną semantykę i strukturę,
 - kontrast i czytelność interfejsu zostały praktycznie poprawione,
 - dokumentacja odzwierciedla wdrożony zakres dostępności.
+
+## Implemented Accessibility Remediation
+
+W ramach zadania "Accessibility Audit and Remediation" wdrożono praktyczne poprawki dostępnościowe w najważniejszych widokach Sprintu 8:
+
+- dodano skip link oraz poprawiono semantykę nawigacji i głównej treści w shellu aplikacji,
+- uporządkowano komunikaty statusowe i błędów w formularzach logowania oraz rejestracji,
+- poprawiono opisy, wskazówki i grupowanie pól daty częściowej oraz zakresu dat,
+- poprawiono dostępność filtrów wspólnego archiwum, w tym ich stan, komunikaty i relacje z wynikami,
+- rozszerzono dostępność niestandardowej mapy o obsługę klawiatury, instrukcje i komunikaty statusowe,
+- poprawiono dostępność edytora lokalizacji i wzorca wyboru podpowiedzi adresowych,
+- wzmocniono widoczność focus states oraz kontrast kluczowych interaktywnych elementów,
+- poprawiono dostępność paneli wyboru w administracji oraz statusowych komunikatów edycji i moderacji,
+- poprawiono obsługę klawiaturą w powiększonym widoku zdjęcia, w tym focus po otwarciu i zamknięciu oraz zamykanie klawiszem Escape,
+- dodano przełącznik motywu interfejsu z wariantami jasnym, ciemnym i wysokiego kontrastu oraz zapamiętywaniem wyboru użytkownika.

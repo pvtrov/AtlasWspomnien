@@ -89,6 +89,8 @@ export function PhotoDetailPanel() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
   const descriptionRef = useRef<HTMLTextAreaElement | null>(null);
+  const lightboxCloseButtonRef = useRef<HTMLButtonElement | null>(null);
+  const openLightboxButtonRef = useRef<HTMLButtonElement | null>(null);
   const isBlocked = currentUser?.is_blocked ?? false;
 
   const token = useMemo(() => {
@@ -131,6 +133,24 @@ export function PhotoDetailPanel() {
     textarea.style.height = "auto";
     textarea.style.height = `${Math.max(textarea.scrollHeight, 52)}px`;
   }, [values?.description]);
+
+  useEffect(() => {
+    if (!isImageExpanded) {
+      openLightboxButtonRef.current?.focus();
+      return;
+    }
+
+    lightboxCloseButtonRef.current?.focus();
+
+    function handleEscapeKey(event: KeyboardEvent): void {
+      if (event.key === "Escape") {
+        setIsImageExpanded(false);
+      }
+    }
+
+    window.addEventListener("keydown", handleEscapeKey);
+    return () => window.removeEventListener("keydown", handleEscapeKey);
+  }, [isImageExpanded]);
 
   function handleChange(
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -223,7 +243,7 @@ export function PhotoDetailPanel() {
   if (!currentUser) {
     return (
       <section className="photo-panel">
-        <p className="eyebrow">Sprint 3</p>
+        <p className="eyebrow">Zdjęcie twórcy</p>
         <h1>Szczegóły zdjęcia twórcy</h1>
         <p className="lede">Zaloguj się, aby otworzyć szczegóły swojego zdjęcia i zarządzać własnymi materiałami.</p>
         <Link href="/login" className="inline-link">
@@ -263,10 +283,12 @@ export function PhotoDetailPanel() {
 
         <div className="photo-story-panel__layout">
           <button
+            ref={openLightboxButtonRef}
             type="button"
             className="photo-detail__image-button"
             onClick={() => setIsImageExpanded(true)}
             aria-label="Pokaż zdjęcie w dużym widoku"
+            aria-haspopup="dialog"
           >
             <PhotoImage
               photoId={photo.id}
@@ -432,7 +454,7 @@ export function PhotoDetailPanel() {
             </button>
           </form>
 
-          <p className="auth-form__message" aria-live="polite">
+          <p className="auth-form__message" aria-live="polite" role="status">
             {message}
           </p>
         </article>
@@ -453,6 +475,7 @@ export function PhotoDetailPanel() {
           onClick={() => setIsImageExpanded(false)}
         >
           <button
+            ref={lightboxCloseButtonRef}
             type="button"
             className="photo-lightbox__close"
             onClick={() => setIsImageExpanded(false)}

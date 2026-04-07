@@ -38,6 +38,18 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitMessage, setSubmitMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessageTone, setSubmitMessageTone] = useState<"neutral" | "success" | "error">(
+    "neutral",
+  );
+
+  const formErrorIds = [
+    errors.username ? "username-error" : null,
+    errors.email ? "email-error" : null,
+    errors.password ? "password-error" : null,
+    errors.confirmPassword ? "confirm-password-error" : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   function validate(nextValues: FormValues): FormErrors {
     const nextErrors: FormErrors = {};
@@ -83,6 +95,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     });
 
     setSubmitMessage("");
+    setSubmitMessageTone("neutral");
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
@@ -93,6 +106,7 @@ export function AuthForm({ mode }: AuthFormProps) {
 
     if (Object.keys(nextErrors).length > 0) {
       setSubmitMessage("Popraw wyróżnione pola.");
+      setSubmitMessageTone("error");
       return;
     }
 
@@ -108,6 +122,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         setSubmitMessage(
           "Konto zostało utworzone. Możesz teraz zalogować się adresem e-mail i hasłem.",
         );
+        setSubmitMessageTone("success");
         setValues(initialValues);
         router.push("/login");
       } else {
@@ -116,6 +131,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           password: values.password,
         });
         setSubmitMessage(`Zalogowano jako ${user.username}.`);
+        setSubmitMessageTone("success");
         router.push("/");
         router.refresh();
       }
@@ -125,6 +141,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           ? error.message
           : "Żądanie uwierzytelnienia nie powiodło się.",
       );
+      setSubmitMessageTone("error");
     } finally {
       setIsSubmitting(false);
     }
@@ -144,7 +161,14 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
       </div>
 
-      <form className="auth-form" noValidate onSubmit={handleSubmit}>
+      <form className="auth-form" noValidate onSubmit={handleSubmit} aria-describedby="auth-form-status">
+        {formErrorIds ? (
+          <div className="auth-form__error-summary" role="alert" aria-labelledby={`${mode}-error-summary-title`}>
+            <p id={`${mode}-error-summary-title`}>Formularz wymaga poprawek.</p>
+            <p>Sprawdź oznaczone pola i popraw błędy przed wysłaniem.</p>
+          </div>
+        ) : null}
+
         {isRegister ? (
           <div className="auth-field">
             <label htmlFor="username">Nazwa użytkownika</label>
@@ -155,6 +179,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               autoComplete="username"
               value={values.username}
               onChange={handleValueChange}
+              required
               aria-invalid={Boolean(errors.username)}
               aria-describedby={errors.username ? "username-error" : undefined}
             />
@@ -175,6 +200,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             autoComplete="email"
             value={values.email}
             onChange={handleValueChange}
+            required
             aria-invalid={Boolean(errors.email)}
             aria-describedby={errors.email ? "email-error" : undefined}
           />
@@ -194,6 +220,7 @@ export function AuthForm({ mode }: AuthFormProps) {
             autoComplete={isRegister ? "new-password" : "current-password"}
             value={values.password}
             onChange={handleValueChange}
+            required
             aria-invalid={Boolean(errors.password)}
             aria-describedby={errors.password ? "password-error" : undefined}
           />
@@ -214,6 +241,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               autoComplete="new-password"
               value={values.confirmPassword}
               onChange={handleValueChange}
+              required
               aria-invalid={Boolean(errors.confirmPassword)}
               aria-describedby={
                 errors.confirmPassword ? "confirm-password-error" : undefined
@@ -235,7 +263,12 @@ export function AuthForm({ mode }: AuthFormProps) {
               : "Zaloguj się"}
         </button>
 
-        <p className="auth-form__message" aria-live="polite">
+        <p
+          id="auth-form-status"
+          className={`auth-form__message auth-form__message--${submitMessageTone}`}
+          aria-live="polite"
+          role={submitMessageTone === "error" ? "alert" : "status"}
+        >
           {submitMessage}
         </p>
 

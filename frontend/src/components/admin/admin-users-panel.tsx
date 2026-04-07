@@ -76,11 +76,6 @@ export function AdminUsersPanel() {
 
   async function handleBlockUser(): Promise<void> {
     if (!token || !selectedUser) {
-      setMessage("Choose one user before applying the block action.");
-      return;
-    }
-
-    if (!token || !selectedUser) {
       setMessage("Wybierz użytkownika przed wykonaniem akcji blokady.");
       return;
     }
@@ -135,7 +130,7 @@ export function AdminUsersPanel() {
   if (!currentUser) {
     return (
       <section className="photo-panel">
-        <p className="eyebrow">Sprint 4</p>
+        <p className="eyebrow">Administracja</p>
         <h1>Użytkownicy administracyjne</h1>
         <p className="lede">
           Zaloguj się kontem administratora, aby przeglądać użytkowników i blokować twórców w razie potrzeby.
@@ -147,7 +142,7 @@ export function AdminUsersPanel() {
   if (currentUser.role !== "administrator") {
     return (
       <section className="photo-panel">
-        <p className="eyebrow">Sprint 4</p>
+        <p className="eyebrow">Administracja</p>
         <h1>Użytkownicy administracyjne</h1>
         <p className="lede">Dostęp administratora jest wymagany, aby wejść do tej strefy moderacji.</p>
       </section>
@@ -169,7 +164,7 @@ export function AdminUsersPanel() {
           </p>
         </div>
 
-        <p className="auth-form__message" aria-live="polite">
+        <p className="auth-form__message" aria-live="polite" role="status">
           {message}
         </p>
 
@@ -189,6 +184,8 @@ export function AdminUsersPanel() {
                   user.id === selectedUserId ? " admin-user-card--selected" : ""
                 }`}
                 onClick={() => setSelectedUserId(user.id)}
+                aria-pressed={user.id === selectedUserId}
+                aria-describedby={`admin-user-card-meta-${user.id}`}
               >
                 <div className="admin-user-card__row">
                   <strong>{user.username}</strong>
@@ -201,7 +198,7 @@ export function AdminUsersPanel() {
                   </span>
                 </div>
                 <p>{user.email}</p>
-                <p>Rola: {user.role}</p>
+                <p id={`admin-user-card-meta-${user.id}`}>Rola: {user.role}</p>
               </button>
             ))}
           </div>

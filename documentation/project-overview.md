@@ -1,5 +1,9 @@
 # Project Overview
 
+## Product Name
+
+The current product name is `Atlas Wspomnień`.
+
 ## Goal
 
 The goal of this project is to build a web application for a community-driven digital archive focused on preserving and sharing historical photographs tied to a specific area.

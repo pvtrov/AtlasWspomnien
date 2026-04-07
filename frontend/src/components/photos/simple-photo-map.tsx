@@ -35,6 +35,7 @@ type Props = {
   onSelectPoint?: (pointId: number | string) => void;
   onSetPin?: (coordinates: MapCenter) => void;
   emptyLabel: string;
+  instructionsLabel?: string;
 };
 
 type ManualView = {
@@ -126,6 +127,7 @@ export function SimplePhotoMap({
   onSelectPoint,
   onSetPin,
   emptyLabel,
+  instructionsLabel = "Użyj przycisków sterujących, aby zmieniać przybliżenie i resetować widok mapy.",
 }: Props) {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const dragStateRef = useRef<{
@@ -142,6 +144,8 @@ export function SimplePhotoMap({
   });
   const [manualView, setManualView] = useState<ManualView | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const instructionsId = `photo-map-instructions-${editable ? "editable" : "readonly"}`;
+  const statusId = `photo-map-status-${editable ? "editable" : "readonly"}`;
 
   useEffect(() => {
     const element = mapRef.current;
@@ -233,6 +237,19 @@ export function SimplePhotoMap({
 
   function resetView(): void {
     setManualView(null);
+  }
+
+  function panBy(deltaX: number, deltaY: number): void {
+    const startWorld = latLngToWorld(center.latitude, center.longitude, zoom);
+    const nextCenter = worldToLatLng(startWorld.x + deltaX, startWorld.y + deltaY, zoom);
+
+    setManualView({
+      center: {
+        latitude: clamp(nextCenter.latitude, -85, 85),
+        longitude: normalizeLongitude(nextCenter.longitude),
+      },
+      zoom,
+    });
   }
 
   function handlePointerDown(event: React.PointerEvent<HTMLDivElement>): void {
@@ -331,8 +348,59 @@ export function SimplePhotoMap({
     });
   }
 
+  function handleKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
+    switch (event.key) {
+      case "ArrowUp":
+        event.preventDefault();
+        panBy(0, -64);
+        break;
+      case "ArrowDown":
+        event.preventDefault();
+        panBy(0, 64);
+        break;
+      case "ArrowLeft":
+        event.preventDefault();
+        panBy(-64, 0);
+        break;
+      case "ArrowRight":
+        event.preventDefault();
+        panBy(64, 0);
+        break;
+      case "+":
+      case "=":
+        event.preventDefault();
+        setManualZoom(zoom + 1);
+        break;
+      case "-":
+        event.preventDefault();
+        setManualZoom(zoom - 1);
+        break;
+      case "Enter":
+      case " ":
+        if (editable && onSetPin) {
+          event.preventDefault();
+          onSetPin(center);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
+  const statusMessage = pin
+    ? `Pinezka ustawiona na współrzędnych ${pin.latitude.toFixed(4)}, ${pin.longitude.toFixed(4)}.`
+    : selectedPoint
+      ? `Wybrane zdjęcie na mapie: ${selectedPoint.label}.`
+      : points.length > 0
+        ? `Mapa pokazuje ${points.length} ${points.length === 1 ? "punkt" : "punkty"}.`
+        : emptyLabel;
+
   return (
     <div className="photo-map">
+      <p id={instructionsId} className="photo-map__instructions">
+        {instructionsLabel}
+        {editable ? " Naciśnij Enter lub spację, aby ustawić pinezkę na środku widoku." : ""}
+      </p>
       <div
         ref={mapRef}
         className={`photo-map__viewport${editable ? " photo-map__viewport--editable" : ""}${
@@ -344,8 +412,12 @@ export function SimplePhotoMap({
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerCancel}
         onWheel={handleWheel}
-        role={editable ? "application" : "img"}
+        onKeyDown={handleKeyDown}
+        role="region"
         aria-label={emptyLabel}
+        aria-describedby={`${instructionsId} ${statusId}`}
+        aria-roledescription="interaktywna mapa"
+        tabIndex={0}
       >
         <div
           className="photo-map__controls"
@@ -415,7 +487,8 @@ export function SimplePhotoMap({
                 event.stopPropagation();
                 onSelectPoint?.(point.id);
               }}
-              aria-label={point.label}
+              aria-label={`Punkt mapy: ${point.label}`}
+              aria-pressed={point.id === selectedPointId}
             />
           );
         })}
@@ -437,6 +510,10 @@ export function SimplePhotoMap({
           </div>
         ) : null}
       </div>
+
+      <p id={statusId} className="photo-map__status" role="status" aria-live="polite">
+        {statusMessage}
+      </p>
 
       <p className="photo-map__credit">
         Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors

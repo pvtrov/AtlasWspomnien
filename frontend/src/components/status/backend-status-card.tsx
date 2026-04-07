@@ -6,8 +6,8 @@ import { getApiBaseUrl } from "@/lib/config";
 import { getBackendStatus, type BackendStatusResult } from "@/services/api-client";
 
 const initialStatus: BackendStatusResult = {
-  label: "Checking",
-  message: "Frontend is checking whether the backend health endpoint is reachable.",
+  label: "Sprawdzanie",
+  message: "Interfejs sprawdza, czy endpoint zdrowia backendu jest osiągalny.",
   tone: "neutral",
 };
 
@@ -34,7 +34,7 @@ export function BackendStatusCard() {
 
   return (
     <article className="status-card">
-      <h2>Backend Connectivity</h2>
+      <h2>Połączenie z backendem</h2>
       <p className={`status-value status-value--${status.tone}`}>{status.label}</p>
       <p>{status.message}</p>
     </article>
