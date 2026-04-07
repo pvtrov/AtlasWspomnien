@@ -107,12 +107,6 @@ export function AdminRecentPhotosPanel() {
             : "Brak pozycji do przeglądu."}
         </p>
       </div>
-
-      <p className="photo-panel__meta admin-recent-photos-panel__intro">
-        Ta lista korzysta z ostatniej aktywności wpisu. Najpierw bierze `updated_at`, a gdyby go
-        brakowało, wraca do `created_at`.
-      </p>
-
       <dl className="photo-detail__meta admin-recent-photos-panel__window">
         <div>
           <dt>Poprzednie skuteczne logowanie</dt>
