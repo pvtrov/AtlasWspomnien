@@ -120,6 +120,8 @@ CurrentAdministrator = Annotated[User, Depends(require_administrator)]
     "/register",
     response_model=RegisterResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Register a new creator account",
+    description="Create a new creator account for the archive and return the created user payload.",
 )
 def register_creator(payload: RegisterRequest, db: DbSession) -> RegisterResponse:
     repository = UserRepository(db)
@@ -146,7 +148,12 @@ def register_creator(payload: RegisterRequest, db: DbSession) -> RegisterRespons
     return RegisterResponse(user=user)
 
 
-@router.post("/login", response_model=LoginResponse)
+@router.post(
+    "/login",
+    response_model=LoginResponse,
+    summary="Authenticate a user",
+    description="Authenticate an existing user with email and password and return a bearer access token together with the user payload.",
+)
 def login(payload: LoginRequest, db: DbSession) -> LoginResponse:
     repository = UserRepository(db)
     user = repository.get_by_email(payload.email.strip().lower())
@@ -166,6 +173,11 @@ def login(payload: LoginRequest, db: DbSession) -> LoginResponse:
     )
 
 
-@router.get("/me", response_model=CurrentUserResponse)
+@router.get(
+    "/me",
+    response_model=CurrentUserResponse,
+    summary="Read the current authenticated user",
+    description="Return the currently authenticated user resolved from the bearer token.",
+)
 def read_current_user(current_user: CurrentUser) -> CurrentUserResponse:
     return CurrentUserResponse(user=current_user)

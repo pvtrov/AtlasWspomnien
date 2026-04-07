@@ -15,6 +15,17 @@ Public endpoints are available without authentication unless stated otherwise.
 
 Non-public endpoints require an authenticated user and may later require role-based authorization depending on the business domain.
 
+## Swagger and Interactive Docs
+
+The backend exposes interactive OpenAPI documentation through FastAPI.
+
+Recommended demo entry points:
+
+- Swagger UI: `http://localhost:8000/docs`
+- OpenAPI JSON: `http://localhost:8000/openapi.json`
+
+For the live demo, Swagger UI should be treated as the main human-friendly API documentation view, while the repository document below remains the contract-oriented reference.
+
 # Authentication
 
 This section defines the initial authentication-related API contract needed for Sprint 2 frontend and backend work.
@@ -1403,3 +1414,91 @@ Behavior:
 - if no matching user exists, the script creates a new administrator account,
 - if a matching email or username already exists, the script promotes that user to administrator,
 - if the matching user is already an administrator, the script completes successfully without changing the role.
+
+# Demo Calls
+
+This section lists the most useful API calls to present during the project demo.
+
+## Public API Demo
+
+### Shared archive list
+
+```bash
+curl "http://localhost:8000/api/v1/photos"
+```
+
+### Shared archive list with filters
+
+```bash
+curl "http://localhost:8000/api/v1/photos?query=lublin&category=ulica&taken_year=1982"
+```
+
+### Shared photo detail
+
+```bash
+curl "http://localhost:8000/api/v1/photos/1"
+```
+
+## Authentication Demo
+
+### Login and capture access token
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin@example.com",
+    "password": "secret123"
+  }'
+```
+
+The returned `access_token` can be reused in the private API calls below.
+
+If the demo uses an already authenticated browser session, the bearer token may also be copied from the browser storage or current session state and reused in `curl`.
+
+## Private Creator API Demo
+
+### Read current authenticated user
+
+```bash
+curl "http://localhost:8000/api/v1/auth/me" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### List the authenticated creator's own photos
+
+```bash
+curl "http://localhost:8000/api/v1/1/photos" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+## Private Admin API Demo
+
+### List users
+
+```bash
+curl "http://localhost:8000/api/v1/admin/users" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### List photos added since the previous administrator login
+
+```bash
+curl "http://localhost:8000/api/v1/admin/recent-photos" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>"
+```
+
+### Update photo metadata as an administrator
+
+```bash
+curl -X PATCH "http://localhost:8000/api/v1/admin/photos/1" \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "category_slug": "budynek",
+    "display_name": "Kamienica przy rynku",
+    "description": "Uzupełniony opis administratora.",
+    "location_text": "Lublin, Rynek",
+    "taken_year": 1982
+  }'
+```

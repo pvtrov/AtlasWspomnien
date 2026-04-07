@@ -37,7 +37,12 @@ def get_photo_or_404(*, db: Session, photo_id: int):
     return photo
 
 
-@router.get("/users", response_model=UserListResponse)
+@router.get(
+    "/users",
+    response_model=UserListResponse,
+    summary="List all users for administration",
+    description="Return all registered users so an administrator can review roles and blocking state.",
+)
 def list_users(
     current_user: CurrentAdministrator,
     db: DbSession,
@@ -47,7 +52,12 @@ def list_users(
     return UserListResponse(users=users)
 
 
-@router.get("/recent-photos", response_model=AdminRecentPhotoListResponse)
+@router.get(
+    "/recent-photos",
+    response_model=AdminRecentPhotoListResponse,
+    summary="List photos added since the previous administrator login",
+    description="Return photos created between the previous and current successful administrator login timestamps.",
+)
 def list_recent_photos(
     current_user: CurrentAdministrator,
     db: DbSession,
@@ -95,7 +105,12 @@ def list_recent_photos(
     )
 
 
-@router.patch("/users/{user_id}/block", response_model=UserResponse)
+@router.patch(
+    "/users/{user_id}/block",
+    response_model=UserResponse,
+    summary="Block a creator account",
+    description="Block a creator so they can no longer upload or edit photos through the creator flow.",
+)
 def block_creator(
     user_id: int,
     current_user: CurrentAdministrator,
@@ -125,7 +140,12 @@ def block_creator(
     return UserResponse(user=blocked_user)
 
 
-@router.patch("/users/{user_id}/promote", response_model=UserResponse)
+@router.patch(
+    "/users/{user_id}/promote",
+    response_model=UserResponse,
+    summary="Promote a user to administrator",
+    description="Promote an existing user account to the administrator role.",
+)
 def promote_user_to_administrator(
     user_id: int,
     current_user: CurrentAdministrator,
@@ -144,7 +164,12 @@ def promote_user_to_administrator(
     return UserResponse(user=promoted_user)
 
 
-@router.patch("/photos/{photo_id}", response_model=PhotoResponse)
+@router.patch(
+    "/photos/{photo_id}",
+    response_model=PhotoResponse,
+    summary="Update photo metadata as an administrator",
+    description="Update shared photo metadata through the administrator moderation flow.",
+)
 def update_photo_metadata(
     photo_id: int,
     payload: PhotoUpdate,
@@ -177,7 +202,12 @@ def update_photo_metadata(
     return PhotoResponse(photo=updated_photo)
 
 
-@router.delete("/photos/{photo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/photos/{photo_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a photo as an administrator",
+    description="Delete a shared photo and its stored file through the administrator moderation flow.",
+)
 def delete_photo(
     photo_id: int,
     current_user: CurrentAdministrator,
@@ -193,7 +223,11 @@ def delete_photo(
         PhotoStorageService(settings.photo_storage_dir).delete_photo(file_reference)
 
 
-@router.get("/photos/{photo_id}/image")
+@router.get(
+    "/photos/{photo_id}/image",
+    summary="Read a photo image as an administrator",
+    description="Return the stored image file for a photo through the administrator moderation flow.",
+)
 def get_photo_image(
     photo_id: int,
     current_user: CurrentAdministrator,

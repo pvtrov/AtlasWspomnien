@@ -169,6 +169,8 @@ def get_photo_or_404(
     "",
     response_model=PhotoCreateResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Upload a new photo",
+    description="Upload a new archive photo together with its metadata for the currently authenticated creator or administrator.",
 )
 def upload_photo(
     payload: Annotated[PhotoCreate, Depends(parse_photo_create)],
@@ -258,7 +260,12 @@ def upload_photo(
     return PhotoCreateResponse(photo=photo)
 
 
-@router.get("", response_model=PhotoListResponse)
+@router.get(
+    "",
+    response_model=PhotoListResponse,
+    summary="List shared archive photos",
+    description="Return the public shared archive list with optional search and filtering parameters.",
+)
 def list_shared_photos(
     filters: Annotated[PhotoListFilters, Depends(parse_photo_list_filters)],
     db: DbSession,
@@ -267,7 +274,12 @@ def list_shared_photos(
     return PhotoListResponse(photos=photos)
 
 
-@owned_photos_router.get("/{user_id}/photos", response_model=PhotoListResponse)
+@owned_photos_router.get(
+    "/{user_id}/photos",
+    response_model=PhotoListResponse,
+    summary="List photos owned by a creator",
+    description="Return the list of photos owned by the authenticated creator for the requested user identifier.",
+)
 def list_owned_photos(
     user_id: int,
     current_user: CurrentPhotoViewer,
@@ -283,7 +295,12 @@ def list_owned_photos(
     return PhotoListResponse(photos=photos)
 
 
-@router.patch("/{photo_id}", response_model=PhotoResponse)
+@router.patch(
+    "/{photo_id}",
+    response_model=PhotoResponse,
+    summary="Update creator-owned photo metadata",
+    description="Update metadata for a photo owned by the authenticated creator or administrator acting through the creator flow.",
+)
 def update_creator_photo(
     photo_id: int,
     payload: PhotoUpdate,
@@ -319,7 +336,12 @@ def update_creator_photo(
     return PhotoResponse(photo=updated_photo)
 
 
-@router.delete("/{photo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{photo_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a creator-owned photo",
+    description="Delete a photo owned by the authenticated creator or administrator and remove its stored file if present.",
+)
 def delete_creator_photo(
     photo_id: int,
     current_user: CurrentPhotoManager,
@@ -338,7 +360,12 @@ def delete_creator_photo(
         PhotoStorageService(settings.photo_storage_dir).delete_photo(file_reference)
 
 
-@router.get("/{photo_id}", response_model=PhotoResponse)
+@router.get(
+    "/{photo_id}",
+    response_model=PhotoResponse,
+    summary="Read a shared photo",
+    description="Return the public shared archive metadata for one photo.",
+)
 def get_shared_photo(
     photo_id: int,
     db: DbSession,
@@ -350,7 +377,11 @@ def get_shared_photo(
     return PhotoResponse(photo=photo)
 
 
-@router.get("/{photo_id}/image")
+@router.get(
+    "/{photo_id}/image",
+    summary="Read a shared photo image",
+    description="Return the image file for a public shared archive photo.",
+)
 def get_shared_photo_image(
     photo_id: int,
     db: DbSession,

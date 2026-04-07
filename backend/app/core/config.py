@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "AITSI Backend"
+    app_name: str = "Atlas Wspomnień API"
     environment: str = "development"
     debug: bool = False
     api_prefix: str = "/api"
