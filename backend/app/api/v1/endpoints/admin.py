@@ -12,7 +12,12 @@ from app.models.user import UserRole
 from app.repositories.photo_category_repository import PhotoCategoryRepository
 from app.repositories.photo_repository import PhotoRepository
 from app.repositories.user_repository import UserRepository
-from app.schemas.photo import PhotoResponse, PhotoUpdate
+from app.schemas.photo import (
+    AdminRecentPhotoListResponse,
+    AdminRecentPhotoRead,
+    PhotoResponse,
+    PhotoUpdate,
+)
 from app.schemas.user import UserListResponse, UserResponse
 from app.services.photo_storage import PhotoStorageService
 
@@ -40,6 +45,54 @@ def list_users(
     del current_user
     users = UserRepository(db).list_all()
     return UserListResponse(users=users)
+
+
+@router.get("/recent-photos", response_model=AdminRecentPhotoListResponse)
+def list_recent_photos(
+    current_user: CurrentAdministrator,
+    db: DbSession,
+) -> AdminRecentPhotoListResponse:
+    if (
+        current_user.previous_successful_login_at is None
+        or current_user.last_successful_login_at is None
+    ):
+        return AdminRecentPhotoListResponse(
+            has_previous_successful_login=False,
+            previous_successful_login_at=current_user.previous_successful_login_at,
+            last_successful_login_at=current_user.last_successful_login_at,
+            photos=[],
+        )
+
+    photos = PhotoRepository(db).list_recent_for_administrator(
+        previous_successful_login_at=current_user.previous_successful_login_at,
+        last_successful_login_at=current_user.last_successful_login_at,
+    )
+    return AdminRecentPhotoListResponse(
+        has_previous_successful_login=True,
+        previous_successful_login_at=current_user.previous_successful_login_at,
+        last_successful_login_at=current_user.last_successful_login_at,
+        photos=[
+            AdminRecentPhotoRead(
+                id=photo.id,
+                owner_id=photo.owner_id,
+                owner_username=photo.owner.username,
+                category_id=photo.category_id,
+                description=photo.description,
+                display_name=photo.display_name,
+                location_text=photo.location_text,
+                latitude=photo.latitude,
+                longitude=photo.longitude,
+                taken_year=photo.taken_year,
+                taken_month=photo.taken_month,
+                taken_day=photo.taken_day,
+                category=photo.category,
+                created_at=photo.created_at,
+                updated_at=photo.updated_at,
+                effective_activity_at=photo.updated_at or photo.created_at,
+            )
+            for photo in photos
+        ],
+    )
 
 
 @router.patch("/users/{user_id}/block", response_model=UserResponse)

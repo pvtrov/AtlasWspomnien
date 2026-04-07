@@ -110,6 +110,7 @@ Authenticate an existing user and return the minimal authentication payload requ
 - the backend verifies the provided credentials,
 - the backend returns a minimal authentication token payload,
 - blocked users may still authenticate so they can access non-mutation areas of the application that remain available to them,
+- each successful login rotates internal login timestamps so administrator-only recent-photo review can compare the current and previous successful login windows,
 - the exact token implementation may be refined later, but the response contract should remain simple and frontend-friendly.
 
 #### Success Response
@@ -860,6 +861,88 @@ Body:
       "is_blocked": false,
       "created_at": "2026-04-04T10:00:00Z",
       "updated_at": "2026-04-04T10:00:00Z"
+    }
+  ]
+}
+```
+
+#### Error Responses
+
+`401 Unauthorized`
+
+```json
+{
+  "detail": "Not authenticated."
+}
+```
+
+`403 Forbidden`
+
+```json
+{
+  "detail": "Only administrators can access moderation routes."
+}
+```
+
+### `GET /api/v1/admin/recent-photos`
+
+#### Purpose
+
+Return photos whose latest activity timestamp falls inside the administrator's previous successful login window.
+
+This endpoint is intended to support a simple administrator review section that links each item back to the shared photo detail moderation flow.
+
+#### Request Headers
+
+```text
+Authorization: Bearer <access_token>
+```
+
+#### Response Notes
+
+- the comparison window is based on the authenticated administrator's `previous_successful_login_at` and `last_successful_login_at`,
+- photo activity uses `updated_at` first and falls back to `created_at` only if `updated_at` is unavailable,
+- this means an older photo edited after the previous administrator login is included in the response,
+- if the administrator does not yet have a previous successful login timestamp, the endpoint returns an empty list together with `has_previous_successful_login: false`.
+
+#### Success Response
+
+Status:
+
+```text
+200 OK
+```
+
+Body:
+
+```json
+{
+  "has_previous_successful_login": true,
+  "previous_successful_login_at": "2026-04-07T08:00:00Z",
+  "last_successful_login_at": "2026-04-07T10:30:00Z",
+  "photos": [
+    {
+      "id": 7,
+      "owner_id": 2,
+      "owner_username": "creator_name",
+      "category_id": 1,
+      "description": "Historic market square in winter.",
+      "display_name": "Winter market square",
+      "location_text": "Rynek",
+      "latitude": 50.061947,
+      "longitude": 19.936856,
+      "taken_year": 1982,
+      "taken_month": 1,
+      "taken_day": 14,
+      "category": {
+        "id": 1,
+        "slug": "ulica",
+        "name": "Ulica",
+        "parent_id": null
+      },
+      "created_at": "2026-04-07T08:20:00Z",
+      "updated_at": "2026-04-07T09:15:00Z",
+      "effective_activity_at": "2026-04-07T09:15:00Z"
     }
   ]
 }
